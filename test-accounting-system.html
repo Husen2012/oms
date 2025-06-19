@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Accounting System - Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .test-button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background-color: #2980b9;
+        }
+        .success {
+            background-color: #27ae60;
+        }
+        .success:hover {
+            background-color: #229954;
+        }
+        .output {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 Enterprise Accounting System</h1>
+            <h2>Test & Demonstration Platform</h2>
+            <p>Complete double-entry bookkeeping with advanced financial reporting</p>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 System Status</h3>
+            <div id="systemStatus" class="status">Loading accounting system...</div>
+            <button class="test-button" onclick="checkSystemStatus()">🔍 Check System Status</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Quick Tests</h3>
+            <button class="test-button success" onclick="runCompleteDemo()">🚀 Run Complete Demo</button>
+            <button class="test-button" onclick="testChartOfAccounts()">📋 Test Chart of Accounts</button>
+            <button class="test-button" onclick="testJournalEntries()">📝 Test Journal Entries</button>
+            <button class="test-button" onclick="testTrialBalance()">⚖️ Test Trial Balance</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📈 Financial Reports</h3>
+            <button class="test-button" onclick="generateProfitLossReport()">📊 Profit & Loss Statement</button>
+            <button class="test-button" onclick="generateBalanceSheetReport()">🏛️ Balance Sheet</button>
+            <button class="test-button" onclick="generateCashFlowReport()">💰 Cash Flow Statement</button>
+        </div>
+
+        <div class="test-section">
+            <h3>👥 Partner Statements</h3>
+            <button class="test-button" onclick="generateCustomerStatement()">👤 Customer Statement</button>
+            <button class="test-button" onclick="generateSupplierStatement()">🏭 Supplier Statement</button>
+            <button class="test-button" onclick="generateShippingStatement()">🚚 Shipping Company Statement</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Integration Tests</h3>
+            <button class="test-button" onclick="testBusinessIntegration()">🔗 Test Business Integration</button>
+            <button class="test-button" onclick="processExistingData()">📊 Process Existing Data</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Output Console</h3>
+            <button class="test-button" onclick="clearOutput()">🗑️ Clear Output</button>
+            <div id="output" class="output">Ready for testing...\n</div>
+        </div>
+    </div>
+
+    <!-- Load all accounting system modules -->
+    <script src="accounting-chart-of-accounts.js"></script>
+    <script src="accounting-journal-entries.js"></script>
+    <script src="accounting-general-ledger.js"></script>
+    <script src="accounting-partner-statements.js"></script>
+    <script src="accounting-financial-statements.js"></script>
+    <script src="accounting-integration.js"></script>
+    <script src="accounting-system-demo.js"></script>
+
+    <script>
+        // Override console.log to display in our output div
+        const originalConsoleLog = console.log;
+        const outputDiv = document.getElementById('output');
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            outputDiv.textContent += message + '\n';
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        };
+
+        // System status check
+        function checkSystemStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            try {
+                let status = '✅ System Status: OPERATIONAL\n\n';
+                
+                // Check if functions exist
+                const functions = [
+                    'initializeChartOfAccounts',
+                    'createJournalEntry', 
+                    'generateTrialBalance',
+                    'generateCustomerStatement',
+                    'generateProfitLossStatement'
+                ];
+                
+                functions.forEach(func => {
+                    if (typeof window[func] === 'function') {
+                        status += `✅ ${func}: Available\n`;
+                    } else {
+                        status += `❌ ${func}: Missing\n`;
+                    }
+                });
+                
+                statusDiv.className = 'status success';
+                statusDiv.textContent = status;
+                console.log('🔍 System status check completed');
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ System Error: ' + error.message;
+                console.error('System status check failed:', error);
+            }
+        }
+
+        // Test functions
+        function runCompleteDemo() {
+            console.log('🚀 Starting complete accounting system demo...');
+            try {
+                if (typeof runCompleteAccountingDemo === 'function') {
+                    runCompleteAccountingDemo();
+                } else {
+                    console.log('❌ Demo function not available');
+                }
+            } catch (error) {
+                console.error('Demo failed:', error);
+            }
+        }
+
+        function testChartOfAccounts() {
+            console.log('📋 Testing Chart of Accounts...');
+            try {
+                if (typeof getAllAccounts === 'function') {
+                    const accounts = getAllAccounts();
+                    console.log(`✅ Chart of Accounts loaded: ${accounts.length} accounts`);
+                    console.log('Sample accounts:');
+                    accounts.slice(0, 10).forEach(acc => {
+                        console.log(`  ${acc.code} - ${acc.name} (${acc.type})`);
+                    });
+                } else {
+                    console.log('❌ Chart of Accounts function not available');
+                }
+            } catch (error) {
+                console.error('Chart of Accounts test failed:', error);
+            }
+        }
+
+        function testJournalEntries() {
+            console.log('📝 Testing Journal Entries...');
+            try {
+                if (typeof createJournalEntry === 'function') {
+                    const je = createJournalEntry('2024-06-19', 'Test Entry', 'TEST-001');
+                    je.addDebit('1010', 1000, 'Test debit')
+                      .addCredit('4010', 1000, 'Test credit');
+                    
+                    console.log(`✅ Journal Entry created: ${je.id}`);
+                    console.log(`   Balanced: ${je.balanced}`);
+                    console.log(`   Total Debits: $${je.totalDebits}`);
+                    console.log(`   Total Credits: $${je.totalCredits}`);
+                    
+                    je.post();
+                    console.log(`✅ Journal Entry posted successfully`);
+                } else {
+                    console.log('❌ Journal Entry function not available');
+                }
+            } catch (error) {
+                console.error('Journal Entry test failed:', error);
+            }
+        }
+
+        function testTrialBalance() {
+            console.log('⚖️ Testing Trial Balance...');
+            try {
+                if (typeof generateTrialBalance === 'function') {
+                    const tb = generateTrialBalance();
+                    console.log(`✅ Trial Balance generated`);
+                    console.log(`   As of: ${tb.asOfDate}`);
+                    console.log(`   Total Debits: $${tb.totalDebits.toFixed(2)}`);
+                    console.log(`   Total Credits: $${tb.totalCredits.toFixed(2)}`);
+                    console.log(`   Balanced: ${tb.balanced ? '✅ Yes' : '❌ No'}`);
+                    console.log(`   Accounts with balances: ${tb.accounts.length}`);
+                } else {
+                    console.log('❌ Trial Balance function not available');
+                }
+            } catch (error) {
+                console.error('Trial Balance test failed:', error);
+            }
+        }
+
+        function generateProfitLossReport() {
+            console.log('📊 Generating Profit & Loss Statement...');
+            try {
+                if (typeof generateProfitLossStatement === 'function') {
+                    const pl = generateProfitLossStatement('2024-01-01', '2024-12-31');
+                    console.log(`✅ P&L Statement generated`);
+                    console.log(`   Total Revenue: $${pl.revenue.totalRevenue.toFixed(2)}`);
+                    console.log(`   Total COGS: $${pl.costOfGoodsSold.totalCOGS.toFixed(2)}`);
+                    console.log(`   Gross Profit: $${pl.grossProfit.toFixed(2)}`);
+                    console.log(`   Net Income: $${pl.netIncome.toFixed(2)}`);
+                    console.log(`   Net Margin: ${pl.netMargin.toFixed(1)}%`);
+                } else {
+                    console.log('❌ P&L function not available');
+                }
+            } catch (error) {
+                console.error('P&L generation failed:', error);
+            }
+        }
+
+        function generateBalanceSheetReport() {
+            console.log('🏛️ Generating Balance Sheet...');
+            try {
+                if (typeof generateBalanceSheet === 'function') {
+                    const bs = generateBalanceSheet('2024-12-31');
+                    console.log(`✅ Balance Sheet generated`);
+                    console.log(`   Total Assets: $${bs.assets.totalAssets.toFixed(2)}`);
+                    console.log(`   Total Liabilities: $${bs.liabilities.totalLiabilities.toFixed(2)}`);
+                    console.log(`   Total Equity: $${bs.equity.totalEquity.toFixed(2)}`);
+                    console.log(`   Balanced: ${bs.balanced ? '✅ Yes' : '❌ No'}`);
+                } else {
+                    console.log('❌ Balance Sheet function not available');
+                }
+            } catch (error) {
+                console.error('Balance Sheet generation failed:', error);
+            }
+        }
+
+        function generateCashFlowReport() {
+            console.log('💰 Generating Cash Flow Statement...');
+            try {
+                if (typeof generateCashFlowStatement === 'function') {
+                    const cf = generateCashFlowStatement('2024-01-01', '2024-12-31');
+                    console.log(`✅ Cash Flow Statement generated`);
+                    console.log(`   Operating Cash Flow: $${cf.operatingActivities.netCashFromOperating.toFixed(2)}`);
+                    console.log(`   Investing Cash Flow: $${cf.investingActivities.netCashFromInvesting.toFixed(2)}`);
+                    console.log(`   Financing Cash Flow: $${cf.financingActivities.netCashFromFinancing.toFixed(2)}`);
+                    console.log(`   Net Change in Cash: $${cf.netChangeInCash.toFixed(2)}`);
+                } else {
+                    console.log('❌ Cash Flow function not available');
+                }
+            } catch (error) {
+                console.error('Cash Flow generation failed:', error);
+            }
+        }
+
+        function generateCustomerStatement() {
+            console.log('👤 Generating Customer Statement...');
+            try {
+                if (typeof generateCustomerStatement === 'function') {
+                    const stmt = generateCustomerStatement('Test Customer', '2024-01-01', '2024-12-31');
+                    console.log(`✅ Customer Statement generated`);
+                    console.log(`   Customer: ${stmt.customer.name || stmt.customer.id || 'Test Customer'}`);
+                    console.log(`   Total Invoiced: $${stmt.accountSummary.totalInvoiced.toFixed(2)}`);
+                    console.log(`   Total Payments: $${stmt.accountSummary.totalPayments.toFixed(2)}`);
+                    console.log(`   Closing Balance: $${stmt.accountSummary.closingBalance.toFixed(2)}`);
+                    console.log(`   Transactions: ${stmt.transactions.length}`);
+                } else {
+                    console.log('❌ Customer Statement function not available');
+                }
+            } catch (error) {
+                console.error('Customer Statement generation failed:', error);
+            }
+        }
+
+        function generateSupplierStatement() {
+            console.log('🏭 Generating Supplier Statement...');
+            try {
+                if (typeof generateSupplierStatement === 'function') {
+                    const stmt = generateSupplierStatement('Test Supplier', '2024-01-01', '2024-12-31');
+                    console.log(`✅ Supplier Statement generated`);
+                    console.log(`   Supplier: ${stmt.supplier.name || stmt.supplier.id || 'Test Supplier'}`);
+                    console.log(`   Total Purchases: $${stmt.accountSummary.totalPurchases.toFixed(2)}`);
+                    console.log(`   Total Payments: $${stmt.accountSummary.totalPayments.toFixed(2)}`);
+                    console.log(`   Closing Balance: $${stmt.accountSummary.closingBalance.toFixed(2)}`);
+                    console.log(`   Transactions: ${stmt.transactions.length}`);
+                } else {
+                    console.log('❌ Supplier Statement function not available');
+                }
+            } catch (error) {
+                console.error('Supplier Statement generation failed:', error);
+            }
+        }
+
+        function generateShippingStatement() {
+            console.log('🚚 Generating Shipping Company Statement...');
+            try {
+                if (typeof generateShippingCompanyStatement === 'function') {
+                    const stmt = generateShippingCompanyStatement('DHL', '2024-01-01', '2024-12-31');
+                    console.log(`✅ Shipping Company Statement generated`);
+                    console.log(`   Company: ${stmt.shippingCompany.name || stmt.shippingCompany.id || 'DHL'}`);
+                    console.log(`   Total Shipping Costs: $${stmt.accountSummary.totalShippingCosts.toFixed(2)}`);
+                    console.log(`   Total Payments: $${stmt.accountSummary.totalPayments.toFixed(2)}`);
+                    console.log(`   Closing Balance: $${stmt.accountSummary.closingBalance.toFixed(2)}`);
+                    console.log(`   Total Shipments: ${stmt.performance.totalShipments}`);
+                    console.log(`   Profit Margin: ${stmt.profitability.profitMargin.toFixed(1)}%`);
+                } else {
+                    console.log('❌ Shipping Statement function not available');
+                }
+            } catch (error) {
+                console.error('Shipping Statement generation failed:', error);
+            }
+        }
+
+        function testBusinessIntegration() {
+            console.log('🔗 Testing Business Integration...');
+            try {
+                if (typeof initializeAccountingIntegration === 'function') {
+                    initializeAccountingIntegration();
+                    console.log('✅ Business integration initialized');
+                } else {
+                    console.log('❌ Integration function not available');
+                }
+            } catch (error) {
+                console.error('Business integration test failed:', error);
+            }
+        }
+
+        function processExistingData() {
+            console.log('📊 Processing Existing Data...');
+            try {
+                if (typeof generateAccountingReportsForExistingData === 'function') {
+                    const reports = generateAccountingReportsForExistingData();
+                    if (reports) {
+                        console.log('✅ Existing data processed successfully');
+                        console.log(`   Customer Statements: ${reports.customerStatements.length}`);
+                        console.log(`   Supplier Statements: ${reports.supplierStatements.length}`);
+                        console.log(`   Shipping Statements: ${reports.shippingStatements.length}`);
+                    } else {
+                        console.log('⚠️ No existing data found to process');
+                    }
+                } else {
+                    console.log('❌ Data processing function not available');
+                }
+            } catch (error) {
+                console.error('Data processing failed:', error);
+            }
+        }
+
+        function clearOutput() {
+            document.getElementById('output').textContent = 'Output cleared...\n';
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            console.log('🏢 Enterprise Accounting System Test Platform Loaded');
+            console.log('='.repeat(60));
+            checkSystemStatus();
+        });
+    </script>
+</body>
+</html>
