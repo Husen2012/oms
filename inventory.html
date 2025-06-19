@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - Sourcing Agent</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>📦 Inventory Management</h1>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">🏠 Master Order Page</a>
+                <a href="purchase-orders.html" class="nav-link">🛒 Purchase Orders</a>
+                <a href="customer-invoices.html" class="nav-link">📋 Customer Sales Orders</a>
+                <a href="shipments.html" class="nav-link">🚚 Shipments</a>
+                <a href="inventory.html" class="nav-link active">📦 Inventory</a>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Inventory Overview Dashboard -->
+        <section class="section">
+            <div class="section-header">
+                <h2>📊 Inventory Overview</h2>
+                <div class="section-actions">
+                    <button class="btn btn-primary" onclick="openReceiveGoodsModal()">📥 Receive Goods</button>
+                    <button class="btn btn-success" onclick="openStockAdjustmentModal()">📊 Adjust Stock</button>
+                    <button class="btn btn-info" onclick="refreshInventoryData()">🔄 Refresh</button>
+                    <button class="btn btn-warning" onclick="showLowStockAlerts()">⚠️ Low Stock Alerts</button>
+                    <button class="btn btn-secondary" onclick="exportInventoryToExcel()">📊 Export to Excel</button>
+                    <div class="bulk-actions-container" id="inventoryBulkActions" style="display: none;">
+                        <span class="bulk-selected-count" id="inventorySelectedCount">0 selected</span>
+                        <button class="btn btn-success btn-small" onclick="bulkAdjustStock()">📊 Adjust Stock</button>
+                        <button class="btn btn-info btn-small" onclick="bulkReceiveInventory()">📥 Receive Goods</button>
+                        <button class="btn btn-warning btn-small" onclick="bulkExportInventory()">📊 Export Selected</button>
+                        <button class="btn btn-danger btn-small" onclick="bulkDeleteInventory()">🗑️ Delete Selected</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Metrics Cards -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">📦</div>
+                    <div class="metric-content">
+                        <h3 id="totalProductsCount">0</h3>
+                        <p>Total Products</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">✅</div>
+                    <div class="metric-content">
+                        <h3 id="availableItemsCount">0</h3>
+                        <p>Available Items</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🔒</div>
+                    <div class="metric-content">
+                        <h3 id="allocatedItemsCount">0</h3>
+                        <p>Allocated Items</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🚚</div>
+                    <div class="metric-content">
+                        <h3 id="shippedItemsCount">0</h3>
+                        <p>Shipped Items</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">💰</div>
+                    <div class="metric-content">
+                        <h3 id="totalInventoryValue">$0</h3>
+                        <p>Total Inventory Value</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">⚠️</div>
+                    <div class="metric-content">
+                        <h3 id="lowStockCount">0</h3>
+                        <p>Low Stock Items</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search and Filters -->
+        <section class="section">
+            <div class="section-header">
+                <h2>🔍 Search & Filter Inventory</h2>
+            </div>
+            
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label>Search Products:</label>
+                    <input type="text" id="inventorySearch" placeholder="Search by product name, SKU, or supplier..." onkeyup="filterInventory()">
+                </div>
+                <div class="filter-group">
+                    <label>Stock Status:</label>
+                    <select id="stockStatusFilter" onchange="filterInventory()">
+                        <option value="">All Status</option>
+                        <option value="available">Available</option>
+                        <option value="low-stock">Low Stock</option>
+                        <option value="out-of-stock">Out of Stock</option>
+                        <option value="allocated">Has Allocated</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Supplier:</label>
+                    <select id="supplierFilter" onchange="filterInventory()">
+                        <option value="">All Suppliers</option>
+                        <!-- Populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Category:</label>
+                    <select id="categoryFilter" onchange="filterInventory()">
+                        <option value="">All Categories</option>
+                        <!-- Populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn-outline" onclick="clearInventoryFilters()">Clear Filters</button>
+                    <button class="btn btn-primary" onclick="filterInventory()">Apply Filters</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Inventory Table -->
+        <section class="section">
+            <div class="section-header">
+                <h2>📋 Inventory Details</h2>
+                <div class="section-info">
+                    <span id="inventoryCount">0 products</span>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="inventoryTable" class="enhanced-table">
+                    <thead>
+                        <tr>
+                            <th class="select-col">
+                                <input type="checkbox" id="selectAllInventory" onchange="toggleAllInventorySelection()" title="Select all inventory items">
+                            </th>
+                            <th>Product Info</th>
+                            <th>Supplier</th>
+                            <th>Total Received</th>
+                            <th>Available</th>
+                            <th>Allocated</th>
+                            <th>Shipped</th>
+                            <th>Stock Status</th>
+                            <th>Unit Cost</th>
+                            <th>Total Value</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody">
+                        <!-- Inventory data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Receive Goods Modal -->
+    <div id="receiveGoodsModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h3>📥 Receive Goods from Purchase Orders</h3>
+                <span class="close" onclick="closeReceiveGoodsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="receive-goods-content">
+                    <div class="form-section">
+                        <h4>Select Purchase Order</h4>
+                        <div class="form-group">
+                            <label>Purchase Order:</label>
+                            <select id="receivePOSelect" onchange="loadPOItemsForReceiving()">
+                                <option value="">Select a Purchase Order...</option>
+                                <!-- Populated by JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="poItemsForReceiving" class="form-section" style="display: none;">
+                        <h4>Items to Receive</h4>
+                        <div id="poItemsList">
+                            <!-- PO items will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeReceiveGoodsModal()">Cancel</button>
+                <button id="confirmReceiveBtn" class="btn btn-success" onclick="confirmReceiveGoods()" style="display: none;">
+                    📥 Confirm Receipt
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Adjustment Modal -->
+    <div id="stockAdjustmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📊 Stock Adjustment</h3>
+                <span class="close" onclick="closeStockAdjustmentModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Product:</label>
+                    <select id="adjustmentProductSelect">
+                        <option value="">Select a product...</option>
+                        <!-- Populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Current Available Quantity:</label>
+                    <input type="number" id="currentQuantity" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Adjustment Type:</label>
+                    <select id="adjustmentType">
+                        <option value="add">Add Stock</option>
+                        <option value="remove">Remove Stock</option>
+                        <option value="set">Set Exact Quantity</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantity:</label>
+                    <input type="number" id="adjustmentQuantity" min="0" placeholder="Enter quantity">
+                </div>
+                <div class="form-group">
+                    <label>Reason:</label>
+                    <textarea id="adjustmentReason" rows="3" placeholder="Reason for adjustment (e.g., damaged goods, counting error, etc.)"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeStockAdjustmentModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmStockAdjustment()">Apply Adjustment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alerts Modal -->
+    <div id="lowStockModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚠️ Low Stock Alerts</h3>
+                <span class="close" onclick="closeLowStockModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="lowStockList">
+                    <!-- Low stock items will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeLowStockModal()">Close</button>
+                <button class="btn btn-primary" onclick="createPOFromLowStock()">Create Purchase Orders</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Initialize inventory page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Inventory page loaded');
+            loadInventoryData();
+            updateInventoryMetrics();
+            populateInventoryFilters();
+        });
+    </script>
+</body>
+</html>

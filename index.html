@@ -1,0 +1,1357 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Order - Sourcing Agent</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Arabic font support for jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.plugin.standard_fonts_metrics.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.plugin.split_text_to_size.min.js"></script>
+    <!-- Arabic text processing library -->
+    <script src="https://cdn.jsdelivr.net/npm/bidi-js@1.0.3/lib/bidi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>Sourcing Agent</h2>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">
+                    <span class="nav-icon">📋</span>
+                    Master Order
+                </a>
+                <a href="inventory.html" class="nav-link">
+                    <span class="nav-icon">📦</span>
+                    Inventory
+                </a>
+                <a href="shipments.html" class="nav-link">
+                    <span class="nav-icon">🚚</span>
+                    Shipments
+                </a>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="header">
+            <h1>Master Order</h1>
+            <p>Create and manage customer sales orders</p>
+
+        </header>
+
+        <div class="full-width-layout">
+                <!-- 0. Order Details Section -->
+                <section class="section order-details-section workflow-section" data-step="0">
+                    <div class="order-details-header collapsible-header" onclick="toggleOrderDetails()">
+                        <div class="header-content">
+                            <div class="workflow-indicator">
+                                <span class="step-number">0</span>
+                                <span class="step-icon">📋</span>
+                            </div>
+                            <h2>Order Details</h2>
+                            <span class="workflow-description">When customer approves</span>
+                            <span class="collapse-indicator" id="orderDetailsIndicator">▼</span>
+                        </div>
+                    </div>
+
+                    <div class="order-details-content" id="orderDetailsContent">
+                        <!-- First Row -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="orderCustomer">Customer*</label>
+                                <select id="orderCustomer" class="form-select" onchange="updateOrderCalculations()">
+                                    <option value="">Select Customer...</option>
+                                    <option value="F16" selected>F16 Electronics</option>
+                                    <option value="Customer B">Beta Trading Co.</option>
+                                    <option value="Customer C">Gamma Industries</option>
+                                </select>
+                                <span class="field-required">Required</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="orderSupplier">Supplier*</label>
+                                <select id="orderSupplier" class="form-select" onchange="updateOrderCalculations()">
+                                    <option value="">Select Supplier...</option>
+                                    <option value="K2" selected>K2 Manufacturing</option>
+                                    <option value="Supplier B">Beta Components</option>
+                                    <option value="Supplier C">Gamma Supply</option>
+                                </select>
+                                <span class="field-required">Required</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="orderReference">Reference Number (Optional)</label>
+                                <input type="text" id="orderReference" class="form-input" placeholder="Enter reference number...">
+                            </div>
+                        </div>
+
+                        <!-- Second Row -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="orderDeliveryDate">Delivery Date (Optional)</label>
+                                <input type="date" id="orderDeliveryDate" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="orderInvoiceDate">Invoice Date*</label>
+                                <input type="date" id="orderInvoiceDate" class="form-input" required>
+                                <span class="field-required">Required</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="orderShippingRef">Shipping Reference (Optional)</label>
+                                <input type="text" id="orderShippingRef" class="form-input" placeholder="SHIP-AIR-12345">
+                            </div>
+                        </div>
+
+                        <!-- OTS Section -->
+                        <div class="ots-section-inline">
+                            <div class="ots-header-inline collapsible-header" onclick="toggleOTSInline()">
+                                <div class="ots-header-content">
+                                    <div class="ots-workflow-indicator">
+                                        <span class="ots-icon">🎯</span>
+                                    </div>
+                                    <h3>OTS - Order Tracking System</h3>
+                                    <span class="collapse-indicator" id="otsInlineIndicator">▼</span>
+                                </div>
+                            </div>
+                            <div class="ots-inline-content" id="otsInlineContent">
+                                <div class="form-row">
+                                <div class="form-group">
+                                    <label for="orderStatus">Status*</label>
+                                    <select id="orderStatus" class="form-select status-select" onchange="updateStatusBadge()">
+                                        <option value="pending">🟡 Pending</option>
+                                        <option value="in-progress" selected>⏳ In Progress</option>
+                                        <option value="finished">✅ Finished</option>
+                                        <option value="received">📥 Received</option>
+                                        <option value="shipped">🚚 Shipped</option>
+                                        <option value="delivered">📦 Delivered</option>
+                                    </select>
+                                    <span class="field-required">Required</span>
+                                    <div class="status-badge-display">
+                                        <span id="statusBadge" class="status-badge status-in-progress">⏳ In Progress</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="orderPayment">Payment</label>
+                                    <select id="orderPayment" class="form-select payment-select" onchange="updatePaymentBadge()">
+                                        <option value="unpaid">❌ Unpaid</option>
+                                        <option value="partial">📊 Partial</option>
+                                        <option value="paid" selected>💰 Paid</option>
+                                        <option value="in-balance">⚖️ In Balance</option>
+                                        <option value="refunded">🔄 Refunded</option>
+                                    </select>
+                                    <div class="payment-badge-display">
+                                        <span id="paymentBadge" class="payment-badge payment-paid">💰 Paid</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="orderShippingType">Shipping Type</label>
+                                    <select id="orderShippingType" class="form-select shipping-select" onchange="updateShippingBadge()">
+                                        <option value="air" selected>✈️ Air</option>
+                                        <option value="sea">🚢 Sea</option>
+                                    </select>
+                                    <div class="shipping-badge-display">
+                                        <span id="shippingBadge" class="shipping-badge shipping-air">✈️ Air</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+        <!-- Workflow Connector -->
+        <div class="workflow-connector">
+            <div class="connector-line"></div>
+            <div class="connector-arrow">↓</div>
+        </div>
+
+        <!-- 1. Products & Calculations Section -->
+        <section class="section workflow-section" data-step="1">
+            <div class="section-header workflow-header">
+                <div class="workflow-indicator">
+                    <span class="step-number">1</span>
+                    <span class="step-icon">�</span>
+                </div>
+                <div class="header-content">
+                    <h2>Quotation Section</h2>
+                    <div class="section-description">Product selection, quote generation, pricing management - Select products and create professional quotes</div>
+                </div>
+                <div class="section-actions">
+                    <button class="btn btn-success" onclick="openQuickAddProductModal()">
+                        <span class="btn-icon">⚡</span>
+                        Quick Add Product
+                    </button>
+                    <button class="btn btn-primary add-product-btn" onclick="addProduct()">
+                        <span class="btn-icon">+</span>
+                        Add Product
+                    </button>
+                    <button class="btn btn-success" onclick="generateQuotation()">
+                        📋 Generate Quote
+                    </button>
+                </div>
+            </div>
+
+            <div class="products-header">
+                <div class="products-title">
+                    <span class="products-count" id="productsCount">3 products</span>
+                </div>
+                <div class="bulk-actions-container" id="productsBulkActions" style="display: none;">
+                    <span class="bulk-selected-count" id="productsSelectedCount">0 selected</span>
+                    <button class="btn btn-warning btn-small" onclick="bulkEditProducts()">✏️ Edit Selected</button>
+                    <button class="btn btn-info btn-small" onclick="bulkCreateQuote()">📋 Quote Selected</button>
+                    <button class="btn btn-success btn-small" onclick="bulkCreatePO()">🛒 Create PO</button>
+                    <button class="btn btn-danger btn-small" onclick="bulkDeleteProducts()">🗑️ Delete Selected</button>
+                </div>
+            </div>
+
+            <div class="comprehensive-products-table">
+                <table id="comprehensiveProductsTable" class="products-table">
+                    <thead>
+                        <tr>
+                            <th class="select-col">
+                                <input type="checkbox" id="selectAllProducts" onchange="toggleAllProductSelection()" title="Select all products for quote">
+                            </th>
+                            <th class="photo-col">PHOTO</th>
+                            <th class="product-col">PRODUCT</th>
+                            <th class="qty-col">QTY</th>
+                            <th class="cost-price-col">COST PRICE (PC)</th>
+                            <th class="cost-total-col">COST TOTAL</th>
+                            <th class="sell-price-col">SELL PRICE (PC)</th>
+                            <th class="sell-total-col">SELL TOTAL</th>
+                            <th class="profit-col">PROFIT</th>
+                            <th class="actions-col">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comprehensiveProductsTableBody">
+                        <!-- Products will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ✅ PRODUCT SELECTION GUIDANCE PANEL -->
+            <div id="productSelectionGuidance" class="selection-guidance-panel" style="display: none;">
+                <div class="guidance-content">
+                    <div class="guidance-icon">💡</div>
+                    <div class="guidance-text">
+                        <h4>Products Selected for Quote</h4>
+                        <p id="selectedProductsText">0 products selected</p>
+                        <div class="guidance-actions">
+                            <button class="btn btn-success btn-small" onclick="generateQuotation()">
+                                📋 Generate Quote Now
+                            </button>
+                            <button class="btn btn-secondary btn-small" onclick="clearProductPreSelection()">
+                                Clear Selection
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comprehensive Totals Section -->
+            <div class="comprehensive-totals">
+                <div class="totals-grid">
+                    <div class="total-row cost-row">
+                        <span class="total-label">Total Cost (Po):</span>
+                        <span class="total-value" id="totalCostPo">$2,100.00</span>
+                    </div>
+                    <div class="total-row sale-row">
+                        <span class="total-label">Sube Total Sale (So):</span>
+                        <span class="total-value" id="subeTotalSale">$6,948.25</span>
+                    </div>
+                    <div class="total-row customer-charge-row">
+                        <span class="total-label">Other Expenses (Customer Pays):</span>
+                        <span class="total-value">
+                            <input type="number" id="otherExpenses" value="150.00" step="0.01" onchange="updateComprehensiveCalculations()" class="customer-charge-input" placeholder="0.00">
+                        </span>
+                    </div>
+                    <div class="total-row customer-charge-row">
+                        <span class="total-label">Shipping Fee (Customer Pays):</span>
+                        <span class="total-value">
+                            <input type="number" id="comprehensiveShippingFee" value="50.00" step="0.01" onchange="updateComprehensiveCalculations()" class="customer-charge-input" placeholder="0.00">
+                        </span>
+                    </div>
+                    <div class="total-row commission-row">
+                        <span class="total-label">Commission
+                            (<input type="number" id="commissionRate" value="5" min="0" max="100" step="0.1" onchange="updateComprehensiveCalculations()" class="commission-input">%):
+                        </span>
+                        <span class="total-value" id="commissionAmount">$347.41</span>
+                    </div>
+                    <div class="total-row grand-total-row">
+                        <span class="total-label">Total Sale :</span>
+                        <span class="total-value grand-total" id="grandTotalSale">$6,600.84</span>
+                    </div>
+                    <div class="total-row profit-margin-row">
+                        <span class="total-label">Profit Margin Total:</span>
+                        <span class="total-value profit-margin" id="profitMarginTotal">$4,500.84</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow Connector -->
+        <div class="workflow-connector">
+            <div class="connector-line"></div>
+            <div class="connector-arrow">↓</div>
+        </div>
+
+        <!-- 2. Purchase Orders Section -->
+        <section class="section workflow-section" data-step="2">
+            <div class="section-header workflow-header">
+                <div class="workflow-indicator">
+                    <span class="step-number">2</span>
+                    <span class="step-icon">🛒</span>
+                </div>
+                <div class="header-content">
+                    <h2>Purchase Orders (Procurement)</h2>
+                    <div class="section-description">Create POs for suppliers, track ordered quantities, manage supplier relationships</div>
+                </div>
+                <div class="section-actions">
+                    <button class="btn btn-primary" onclick="openSupplierInvoiceModal()">+ Create New PO</button>
+                    <div class="bulk-actions-container" id="purchaseOrdersBulkActions" style="display: none;">
+                        <span class="bulk-selected-count" id="purchaseOrdersSelectedCount">0 selected</span>
+                        <button class="btn btn-success btn-small" onclick="bulkUpdatePOStatus()">📊 Update Status</button>
+                        <button class="btn btn-info btn-small" onclick="bulkReceiveGoods()">📥 Receive Goods</button>
+                        <button class="btn btn-warning btn-small" onclick="bulkExportPOs()">📊 Export Selected</button>
+                        <button class="btn btn-danger btn-small" onclick="bulkDeletePOs()">🗑️ Delete Selected</button>
+                    </div>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="supplierInvoicesTable">
+                    <thead>
+                        <tr>
+                            <th class="select-col">
+                                <input type="checkbox" id="selectAllPOs" onchange="toggleAllPOSelection()" title="Select all purchase orders">
+                            </th>
+                            <th>PO Number</th>
+                            <th>Supplier</th>
+                            <th>Date</th>
+                            <th>Due Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="supplierInvoicesTableBody">
+                        <!-- Purchase orders will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Workflow Connector -->
+        <div class="workflow-connector">
+            <div class="connector-line"></div>
+            <div class="connector-arrow">↓</div>
+        </div>
+
+        <!-- 3. Inventory Management Section -->
+        <section class="section workflow-section" data-step="3">
+            <div class="section-header workflow-header">
+                <div class="workflow-indicator">
+                    <span class="step-number">3</span>
+                    <span class="step-icon">📦</span>
+                </div>
+                <div class="header-content">
+                    <h2>Inventory Management (Receiving & Stock)</h2>
+                    <div class="section-description">Receive goods from POs, real-time inventory status, stock level monitoring, low stock alerts</div>
+                </div>
+            </div>
+
+            <!-- Inventory Actions -->
+            <div class="inventory-actions">
+                <button class="btn btn-primary" onclick="openReceiveGoodsModal()">📥 Receive Goods</button>
+                <button class="btn btn-success" onclick="openStockAdjustmentModal()">📊 Adjust Stock</button>
+                <button class="btn btn-info" onclick="refreshInventoryData()">🔄 Refresh</button>
+                <button class="btn btn-warning" onclick="showLowStockAlerts()">⚠️ Low Stock Alerts</button>
+            </div>
+
+            <div class="table-container enhanced-inventory">
+                <table id="inventoryTable" class="enhanced-inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Procurement</th>
+                            <th>Availability</th>
+                            <th>Shipped</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody">
+                        <!-- Enhanced inventory will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Workflow Connector -->
+        <div class="workflow-connector">
+            <div class="connector-line"></div>
+            <div class="connector-arrow">↓</div>
+        </div>
+
+        <!-- 4. Customer Invoices Section -->
+        <section class="section workflow-section" data-step="4">
+            <div class="section-header workflow-header">
+                <div class="workflow-indicator">
+                    <span class="step-number">4</span>
+                    <span class="step-icon">🧾</span>
+                </div>
+                <div class="header-content">
+                    <h2>Customer Sales Orders</h2>
+                    <div class="section-description">Create and manage customer sales orders, track order status, and prepare for shipment</div>
+                </div>
+                <div class="section-actions">
+                    <button class="btn btn-info" onclick="exportAllInvoicesToExcel()">📊 Export All to Excel</button>
+                    <button class="btn btn-success" onclick="openQuoteModal()">📋 Generate Quote</button>
+                    <button class="btn btn-primary" onclick="openCustomerInvoiceModal()">+ Create New Sales Order</button>
+                    <div class="bulk-actions-container" id="customerInvoicesBulkActions" style="display: none;">
+                        <span class="bulk-selected-count" id="customerInvoicesSelectedCount">0 selected</span>
+                        <button class="btn btn-success btn-small" onclick="bulkUpdateInvoiceStatus()">📊 Update Status</button>
+                        <button class="btn btn-info btn-small" onclick="bulkCreateShipments()">🚚 Create Shipments</button>
+                        <button class="btn btn-warning btn-small" onclick="bulkExportInvoices()">📊 Export Selected</button>
+                        <button class="btn btn-danger btn-small" onclick="bulkDeleteInvoices()">🗑️ Delete Selected</button>
+                    </div>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="customerInvoicesTable">
+                    <thead>
+                        <tr>
+                            <th class="select-col">
+                                <input type="checkbox" id="selectAllInvoices" onchange="toggleAllInvoiceSelection()" title="Select all customer invoices">
+                            </th>
+                            <th>Sales Order Number</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Due Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customerInvoicesTableBody">
+                        <!-- Customer invoices will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ✅ QUOTE MANAGEMENT SECTION -->
+        <!-- ✅ COLLAPSIBLE CUSTOMER QUOTES SECTION -->
+        <section class="section collapsible-section">
+            <div class="section-header collapsible-header" onclick="toggleSection('customerQuotesSection')">
+                <div class="header-content">
+                    <h2>📋 Customer Quotes</h2>
+                    <div class="section-description">Generate and manage customer quotations</div>
+                </div>
+                <div class="collapse-controls">
+                    <span class="collapse-icon" id="customerQuotesIcon">▼</span>
+                </div>
+            </div>
+            <div id="customerQuotesSection" class="collapsible-content">
+                <div class="section-actions">
+                    <button class="btn btn-success" onclick="exportAllQuotesToExcel()">📊 Export All to Excel</button>
+                    <button class="btn btn-secondary" onclick="loadCustomerQuotes()">🔄 Refresh</button>
+                </div>
+                <div class="quotes-container">
+                    <div id="customerQuotesList" class="quotes-list">
+                        <!-- Customer quotes will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+
+        <!-- ✅ PAYMENT REGISTRATION SECTION REMOVED - PAYMENTS NOW INTEGRATED INTO INVOICE/PO CREATION -->
+        </div>
+    </div>
+
+    <!-- ✅ QUOTE GENERATION MODAL -->
+    <div id="quoteModal" class="modal">
+        <div class="modal-content invoice-modal">
+            <div class="modal-header">
+                <h3>📋 Generate Customer Quote</h3>
+                <span class="close" onclick="closeQuoteModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="invoice-form-section">
+                    <h4>Quote Details</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Customer</label>
+                            <select id="quoteCustomer">
+                                <option value="">Select Customer</option>
+                                <option value="F16">F16</option>
+                                <option value="Customer B">Customer B</option>
+                                <option value="Customer C">Customer C</option>
+                                <option value="Customer D">Customer D</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Quote Number</label>
+                            <input type="text" id="quoteNumber" readonly class="readonly">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Valid Until</label>
+                            <input type="date" id="quoteValidUntil">
+                        </div>
+                        <div class="form-group">
+                            <label>Shipping Type</label>
+                            <select id="quoteShipmentMethod" onchange="updateShippingFeePreset()">
+                                <option value="sea">🚢 Sea Shipping</option>
+                                <option value="air">✈️ Air Shipping</option>
+                                <option value="custom">📦 Custom Shipping</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Shipping Fee (Manual)</label>
+                            <input type="number" id="quoteShippingFeeManual" step="0.01" placeholder="0.00" value="50.00" onchange="updateQuoteSummary()">
+                            <small class="form-help">Enter custom shipping fee amount</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Shipping Notes</label>
+                            <input type="text" id="quoteShippingNotes" placeholder="Shipping details or notes">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="invoice-form-section">
+                    <h4>Product Selection</h4>
+                    <div class="product-selection-container">
+                        <div id="quoteProductSelectionList">
+                            <!-- Product selection items will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ✅ ENHANCED QUOTE PRICING STRUCTURE -->
+                <div class="invoice-form-section">
+                    <h4>💰 Pricing & Commission</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Other Expenses</label>
+                            <input type="number" id="quoteOtherExpenses" step="0.01" placeholder="0.00" value="0" onchange="updateQuoteSummary()">
+                        </div>
+                        <div class="form-group">
+                            <label>Commission (%)</label>
+                            <input type="number" id="quoteCommissionPercentage" step="0.1" placeholder="5.0" value="5.0" min="0" max="100" onchange="updateQuoteSummary()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="invoice-form-section">
+                    <h4>Quote Summary</h4>
+                    <div class="invoice-summary quote-summary">
+                        <div class="summary-row">
+                            <span>Subtotal (Products):</span>
+                            <span id="quoteSubtotal">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Other Expenses:</span>
+                            <span id="quoteOtherExpensesDisplay">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Shipping Fee:</span>
+                            <span id="quoteShippingFee">$0.00</span>
+                        </div>
+                        <div class="summary-row commission-row">
+                            <span>Commission (<span id="quoteCommissionPercentageDisplay">5.0</span>%):</span>
+                            <span id="quoteCommissionAmount">$0.00</span>
+                        </div>
+                        <div class="summary-row total-row">
+                            <span>Final Total:</span>
+                            <span id="quoteFinalTotal">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="invoice-form-section">
+                    <h4>Additional Notes</h4>
+                    <div class="form-group">
+                        <label>Quote Notes</label>
+                        <textarea id="quoteNotes" placeholder="Additional notes or terms for this quote..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeQuoteModal()">Cancel</button>
+                <button class="btn btn-success" onclick="saveQuote()">Generate Quote</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add Product</h3>
+                <span class="close" onclick="closeProductModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Product Name</label>
+                    <input type="text" id="modalProductName" placeholder="Enter product name">
+                </div>
+                <div class="form-group">
+                    <label>SKU</label>
+                    <input type="text" id="modalSKU" placeholder="Enter SKU">
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="modalQuantity" placeholder="0" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Cost Price (PC)</label>
+                    <input type="number" id="modalCostPrice" placeholder="0.00" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Sell Price (PC)</label>
+                    <input type="number" id="modalSellPrice" placeholder="0.00" step="0.01">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeProductModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ QUICK ADD PRODUCT MODAL - SIMPLIFIED FOR QUOTATION SECTION -->
+    <div id="quickAddProductModal" class="modal">
+        <div class="modal-content quick-add-modal">
+            <div class="modal-header">
+                <h3>⚡ Quick Add Product for Quotation</h3>
+                <span class="close" onclick="closeQuickAddProductModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="quick-add-form">
+                    <div class="form-group">
+                        <label>Product Name *</label>
+                        <input type="text" id="quickProductName" placeholder="Enter product name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>SKU *</label>
+                        <input type="text" id="quickSKU" placeholder="Enter SKU" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cost Price (PC) *</label>
+                            <input type="number" id="quickCostPrice" placeholder="0.00" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Sell Price (PC) *</label>
+                            <input type="number" id="quickSellPrice" placeholder="0.00" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Quotation Quantity</label>
+                        <input type="number" id="quickQuantity" placeholder="1" min="1" value="1">
+                        <small class="form-help">This quantity is for quotation purposes only (not inventory)</small>
+                    </div>
+                </div>
+
+                <div class="quick-add-options">
+                    <div class="option-group">
+                        <input type="checkbox" id="addToQuoteDirectly" checked>
+                        <label for="addToQuoteDirectly">Add directly to quotation list</label>
+                    </div>
+                    <div class="option-group">
+                        <input type="checkbox" id="selectForQuote" checked>
+                        <label for="selectForQuote">Select for quote generation</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeQuickAddProductModal()">Cancel</button>
+                <button class="btn btn-success" onclick="saveQuickProduct()">⚡ Add Product</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Sales Order Creation Modal -->
+    <div id="customerInvoiceModal" class="modal">
+        <div class="modal-content invoice-modal">
+            <div class="modal-header">
+                <h3>Create Customer Sales Order</h3>
+                <span class="close" onclick="closeCustomerInvoiceModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="invoice-form-section">
+                    <h4>Sales Order Details</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Customer</label>
+                            <select id="newInvoiceCustomer">
+                                <option value="">Select Customer</option>
+                                <option value="F16">F16</option>
+                                <option value="Customer B">Customer B</option>
+                                <option value="Customer C">Customer C</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Due Date</label>
+                            <input type="date" id="invoiceDueDate">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="invoice-form-section">
+                    <h4>Shipment Details</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Shipment Type</label>
+                            <select id="invoiceShipmentType" onchange="updateShippingCalculations()">
+                                <option value="air">Air Freight</option>
+                                <option value="sea">Sea Freight</option>
+                                <option value="express">Express Delivery</option>
+                                <option value="standard">Standard Shipping</option>
+                                <option value="local">Local Delivery</option>
+                                <option value="pickup">Customer Pickup</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Shipping Company</label>
+                            <select id="invoiceShippingCompany" onchange="updateShippingCalculations()">
+                                <option value="">Select Shipping Company</option>
+                                <option value="fedex">FedEx</option>
+                                <option value="dhl">DHL</option>
+                                <option value="ups">UPS</option>
+                                <option value="aramex">Aramex</option>
+                                <option value="local_carrier">Local Carrier</option>
+                                <option value="sea_freight">Sea Freight Company</option>
+                                <option value="air_freight">Air Freight Company</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="invoice-form-section">
+                    <h4>📦 Advanced Shipping Management</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Actual Shipping Cost (My Cost)</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="actualShippingCost" step="0.01" min="0" placeholder="0.00" onchange="updateShippingCalculations()">
+                            </div>
+                            <small class="form-help">What you pay to the shipping company</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Customer Shipping Charge</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="customerShippingCharge" step="0.01" min="0" placeholder="0.00" onchange="updateShippingCalculations()">
+                            </div>
+                            <small class="form-help">What you charge the customer</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Shipping Profit Margin</label>
+                            <div class="shipping-profit-display">
+                                <span id="shippingProfitAmount" class="profit-amount">$0.00</span>
+                                <span id="shippingProfitPercentage" class="profit-percentage">(0%)</span>
+                            </div>
+                            <small class="form-help">Profit from shipping charges</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Shipping Notes</label>
+                            <textarea id="shippingNotes" rows="2" placeholder="Special shipping instructions, tracking info, etc."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="invoice-form-section">
+                    <h4>Product Selection</h4>
+                    <div class="product-selection-container">
+                        <div id="productSelectionList">
+                            <!-- Product selection items will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="invoice-form-section">
+                    <h4>💰 Commission & Export Options</h4>
+                    <div class="commission-export-section">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Commission (%)</label>
+                                <input type="number" id="invoiceCommissionPercentage" step="0.1" placeholder="5.0" value="5.0" min="0" max="100" onchange="updateInvoiceSummary()">
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="invoice-form-section">
+                    <h4>📊 Order Summary</h4>
+                    <div class="invoice-summary">
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="invoiceSubtotal">$0.00</span>
+                        </div>
+
+                        <!-- ✅ ENHANCED SHIPPING BREAKDOWN -->
+                        <div class="summary-section">
+                            <div class="summary-row shipping-header">
+                                <span>🚚 Shipping Details:</span>
+                                <span id="invoiceShipping">$0.00</span>
+                            </div>
+                            <div class="shipping-breakdown" id="shippingBreakdown" style="display: none;">
+                                <div class="summary-row sub-row">
+                                    <span>• Customer Charge:</span>
+                                    <span id="shippingCustomerCharge">$0.00</span>
+                                </div>
+                                <div class="summary-row sub-row">
+                                    <span>• My Cost:</span>
+                                    <span id="shippingActualCost">$0.00</span>
+                                </div>
+                                <div class="summary-row sub-row profit-row">
+                                    <span>• Shipping Profit:</span>
+                                    <span id="shippingSummaryProfit">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="summary-row" id="invoiceCommissionRow">
+                            <span>Commission (<span id="invoiceCommissionPercentageDisplay">5.0</span>%):</span>
+                            <span id="invoiceCommissionAmount">$0.00</span>
+                        </div>
+                        <div class="summary-row total-row">
+                            <span>Total Amount:</span>
+                            <span id="invoiceTotal">$0.00</span>
+                        </div>
+
+                        <!-- ✅ PROFITABILITY OVERVIEW -->
+                        <div class="profitability-summary" id="profitabilitySummary" style="display: none;">
+                            <div class="summary-row profit-overview">
+                                <span>💰 Total Profit Margin:</span>
+                                <span id="totalProfitMargin">$0.00 (0%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ✅ ENHANCED CUSTOMER PAYMENT INTEGRATION SECTION -->
+                <div class="invoice-form-section">
+                    <h4>💰 Customer Payment Information</h4>
+                    <div class="payment-integration-section">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Payment Option</label>
+                                <select id="customerPaymentOption" onchange="toggleCustomerPaymentFields()">
+                                    <option value="none">No Payment Now</option>
+                                    <option value="partial_payment">Partial Payment</option>
+                                    <option value="full_payment">Full Payment</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="customerPaymentPercentageGroup" style="display: none;">
+                                <label>Partial Payment %</label>
+                                <select id="customerPaymentPercentage" onchange="calculateCustomerPaymentAmount()">
+                                    <option value="10">10%</option>
+                                    <option value="20">20%</option>
+                                    <option value="30">30%</option>
+                                    <option value="40">40%</option>
+                                    <option value="50" selected>50%</option>
+                                    <option value="75">75%</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="customerPaymentDetailsSection" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Payment Amount</label>
+                                    <input type="number" id="customerPaymentAmount" step="0.01" placeholder="0.00" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>Payment Method</label>
+                                    <select id="customerPaymentMethod">
+                                        <option value="Bank Transfer">Bank Transfer</option>
+                                        <option value="Credit Card">Credit Card</option>
+                                        <option value="PayPal">PayPal</option>
+                                        <option value="Check">Check</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Wire Transfer">Wire Transfer</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Payment Date</label>
+                                    <input type="date" id="customerPaymentDate">
+                                </div>
+                                <div class="form-group">
+                                    <label>Reference Number</label>
+                                    <input type="text" id="customerPaymentReference" placeholder="Transaction reference">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Payment Notes</label>
+                                <textarea id="customerPaymentNotes" placeholder="Payment notes or additional information..."></textarea>
+                            </div>
+
+                            <div class="payment-summary">
+                                <div class="summary-row">
+                                    <span>Payment Amount:</span>
+                                    <span id="customerPaymentAmountDisplay">$0.00</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Remaining Balance:</span>
+                                    <span id="customerRemainingBalanceDisplay">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCustomerInvoiceModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCustomerInvoice()">Create Sales Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supplier Invoice/PO Creation Modal -->
+    <div id="supplierInvoiceModal" class="modal">
+        <div class="modal-content invoice-modal">
+            <div class="modal-header">
+                <h3>Create Purchase Order</h3>
+                <span class="close" onclick="closeSupplierInvoiceModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="invoice-form-section">
+                    <h4>Purchase Order Details</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Supplier</label>
+                            <select id="supplierModalSupplier">
+                                <option value="">Select Supplier</option>
+                                <option value="K2">K2</option>
+                                <option value="Supplier B">Supplier B</option>
+                                <option value="Supplier C">Supplier C</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Expected Delivery Date</label>
+                            <input type="date" id="supplierModalDeliveryDate">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Payment Terms</label>
+                            <select id="supplierModalPaymentTerms">
+                                <option value="net30">Net 30 Days</option>
+                                <option value="net15">Net 15 Days</option>
+                                <option value="net7">Net 7 Days</option>
+                                <option value="cod">Cash on Delivery</option>
+                                <option value="prepaid">Prepaid</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>PO Number</label>
+                            <input type="text" id="supplierModalPONumber" readonly class="readonly">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="invoice-form-section">
+                    <h4>Product Selection</h4>
+                    <div class="product-selection-container">
+                        <div id="supplierProductSelectionList">
+                            <!-- Product selection items will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="invoice-form-section">
+                    <h4>Purchase Order Summary</h4>
+                    <div class="invoice-summary">
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="supplierModalSubtotal">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tax (if applicable):</span>
+                            <span id="supplierModalTax">$0.00</span>
+                        </div>
+                        <div class="summary-row total-row">
+                            <span>Total Amount:</span>
+                            <span id="supplierModalTotal">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ✅ ENHANCED PAYMENT INTEGRATION SECTION -->
+                <div class="invoice-form-section">
+                    <h4>💳 Payment Information</h4>
+                    <div class="payment-integration-section">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Payment Option</label>
+                                <select id="supplierPaymentOption" onchange="togglePaymentFields()">
+                                    <option value="none">No Payment Now</option>
+                                    <option value="down_payment">Down Payment</option>
+                                    <option value="full_payment">Full Payment</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="paymentPercentageGroup" style="display: none;">
+                                <label>Down Payment %</label>
+                                <select id="supplierPaymentPercentage" onchange="calculatePaymentAmount()">
+                                    <option value="10">10%</option>
+                                    <option value="20">20%</option>
+                                    <option value="30">30%</option>
+                                    <option value="40">40%</option>
+                                    <option value="50" selected>50%</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="paymentDetailsSection" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Payment Amount</label>
+                                    <input type="number" id="supplierPaymentAmount" step="0.01" placeholder="0.00" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>Payment Method</label>
+                                    <select id="supplierPaymentMethod">
+                                        <option value="Bank Transfer">Bank Transfer</option>
+                                        <option value="Credit Card">Credit Card</option>
+                                        <option value="Wire Transfer">Wire Transfer</option>
+                                        <option value="Check">Check</option>
+                                        <option value="Cash">Cash</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Payment Date</label>
+                                    <input type="date" id="supplierPaymentDate">
+                                </div>
+                                <div class="form-group">
+                                    <label>Reference Number</label>
+                                    <input type="text" id="supplierPaymentReference" placeholder="Transaction reference">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Payment Notes</label>
+                                <textarea id="supplierPaymentNotes" placeholder="Payment notes or additional information..."></textarea>
+                            </div>
+
+                            <div class="payment-summary">
+                                <div class="summary-row">
+                                    <span>Payment Amount:</span>
+                                    <span id="paymentAmountDisplay">$0.00</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Remaining Balance:</span>
+                                    <span id="remainingBalanceDisplay">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSupplierInvoiceModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSupplierInvoice()">Create Purchase Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PO Creation Modal -->
+    <div id="poCreationModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h3 id="poModalTitle">Create Purchase Order</h3>
+                <span class="close" onclick="closePOModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="po-form-section">
+                    <h4>PO Details</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Supplier</label>
+                            <select id="poSupplier">
+                                <option value="">Select Supplier</option>
+                                <option value="K2">K2 Manufacturing</option>
+                                <option value="Supplier B">Beta Components</option>
+                                <option value="Supplier C">Gamma Supply</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Expected Delivery Date</label>
+                            <input type="date" id="poDeliveryDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Terms</label>
+                            <select id="poPaymentTerms">
+                                <option value="net30">Net 30 Days</option>
+                                <option value="net15">Net 15 Days</option>
+                                <option value="net7">Net 7 Days</option>
+                                <option value="cod">Cash on Delivery</option>
+                                <option value="prepaid">Prepaid</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="po-form-section">
+                    <h4>Product Selection</h4>
+                    <div class="po-product-selection">
+                        <div id="poProductList">
+                            <!-- Products will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="po-form-section">
+                    <h4>PO Summary</h4>
+                    <div class="po-summary">
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="poSubtotal">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tax:</span>
+                            <span id="poTax">$0.00</span>
+                        </div>
+                        <div class="summary-row total-row">
+                            <span>Total Amount:</span>
+                            <span id="poTotal">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="po-form-section">
+                    <h4>Confirmation</h4>
+                    <div class="confirmation-section">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="poConfirmDetails"> I have reviewed and confirmed all PO details
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="poConfirmSupplier"> Supplier information is correct
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="poConfirmProducts"> Product quantities and prices are accurate
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePOModal()">Cancel</button>
+                <button class="btn btn-warning" onclick="savePODraft()">Save as Draft</button>
+                <button class="btn btn-primary" onclick="confirmAndCreatePO()" id="confirmPOBtn" disabled>Confirm & Create PO</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PO Recording Modal -->
+    <div id="poRecordingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Record Purchase Order</h3>
+                <span class="close" onclick="closePORecordingModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>PO Number</label>
+                    <input type="text" id="recordPONumber" placeholder="Enter PO number">
+                </div>
+                <div class="form-group">
+                    <label>Supplier</label>
+                    <select id="recordPOSupplier">
+                        <option value="">Select Supplier</option>
+                        <option value="K2">K2 Manufacturing</option>
+                        <option value="Supplier B">Beta Components</option>
+                        <option value="Supplier C">Gamma Supply</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>PO Date</label>
+                    <input type="date" id="recordPODate">
+                </div>
+                <div class="form-group">
+                    <label>Expected Delivery</label>
+                    <input type="date" id="recordPODelivery">
+                </div>
+                <div class="form-group">
+                    <label>PO Amount</label>
+                    <input type="number" id="recordPOAmount" step="0.01" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="recordPOStatus">
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="recordPONotes" placeholder="Additional notes..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePORecordingModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveRecordedPO()">Record PO</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PO Delivery Recording Modal -->
+    <div id="poDeliveryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Record PO Delivery</h3>
+                <span class="close" onclick="closePODeliveryModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>PO Number</label>
+                    <input type="text" id="deliveryPONumber" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Delivery Date</label>
+                    <input type="date" id="deliveryDate">
+                </div>
+                <div class="form-group">
+                    <label>Received Quantity</label>
+                    <input type="number" id="deliveryQuantity" placeholder="Quantity received">
+                </div>
+                <div class="form-group">
+                    <label>Condition</label>
+                    <select id="deliveryCondition">
+                        <option value="Good">Good Condition</option>
+                        <option value="Damaged">Damaged</option>
+                        <option value="Partial">Partial Delivery</option>
+                        <option value="Complete">Complete</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Delivery Notes</label>
+                    <textarea id="deliveryNotes" placeholder="Delivery notes and observations..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePODeliveryModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveDeliveryRecord()">Record Delivery</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Sales Order from PO Modal -->
+    <div id="customerInvoiceFromPOModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h3 id="customerInvoiceModalTitle">Create Customer Sales Order from PO</h3>
+                <span class="close" onclick="closeCustomerInvoiceFromPOModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="po-form-section">
+                    <h4>Sales Order Details</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Customer</label>
+                            <select id="poInvoiceCustomer">
+                                <option value="">Select Customer</option>
+                                <option value="F16">F16 Electronics</option>
+                                <option value="Customer B">Beta Trading Co.</option>
+                                <option value="Customer C">Gamma Industries</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Due Date</label>
+                            <input type="date" id="invoiceDueDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Shipment Method</label>
+                            <select id="invoiceShipmentMethod">
+                                <option value="standard">Standard Shipping</option>
+                                <option value="express">Express Shipping</option>
+                                <option value="overnight">Overnight Shipping</option>
+                                <option value="local">Local Delivery</option>
+                                <option value="pickup">Customer Pickup</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="po-form-section">
+                    <h4>Product Selection & Pricing</h4>
+                    <div class="po-product-selection">
+                        <div id="invoiceProductList">
+                            <!-- Products will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="po-form-section">
+                    <h4>Invoice Summary</h4>
+                    <div class="po-summary">
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="invoiceSubtotalSummary">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Shipping Fee:</span>
+                            <span id="invoiceShippingFee">$0.00</span>
+                        </div>
+                        <div class="summary-row total-row">
+                            <span>Total Amount:</span>
+                            <span id="invoiceTotalSummary">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="po-form-section">
+                    <h4>Confirmation</h4>
+                    <div class="confirmation-section">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="invoiceConfirmDetails"> I have reviewed and confirmed all invoice details
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="invoiceConfirmCustomer"> Customer information is correct
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="invoiceConfirmPricing"> Product quantities and prices are accurate
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCustomerInvoiceFromPOModal()">Cancel</button>
+                <button class="btn btn-warning" onclick="saveInvoiceDraft()">Save as Draft</button>
+                <button class="btn btn-primary" onclick="confirmAndCreateCustomerInvoice()" id="confirmInvoiceBtn">Confirm & Create Sales Order</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

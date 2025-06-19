@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipments - Sourcing Agent</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Arabic font support for jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.plugin.standard_fonts_metrics.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.plugin.split_text_to_size.min.js"></script>
+    <!-- Arabic text processing library -->
+    <script src="https://cdn.jsdelivr.net/npm/bidi-js@1.0.3/lib/bidi.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <span class="nav-icon">📋</span>
+                    Master Order
+                </a>
+                <a href="shipments.html" class="nav-link active">
+                    <span class="nav-icon">🚚</span>
+                    Shipments
+                </a>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="header">
+                <h1>🚚 Shipments</h1>
+                <p>Track and manage customer order shipments</p>
+            </header>
+
+            <!-- Shipment Statistics Dashboard -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>📊 Shipment Overview</h2>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalShipments">0</div>
+                            <div class="stat-label">Total Shipments</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🚚</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="inTransitShipments">0</div>
+                            <div class="stat-label">In Transit</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="deliveredShipments">0</div>
+                            <div class="stat-label">Delivered</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="shippingRevenue">$0</div>
+                            <div class="stat-label">Shipping Revenue</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Enhanced Search and Filters -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>🔍 Search & Filter Shipments</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="createNewShipment()">+ Create Shipment</button>
+                        <button class="btn btn-success" onclick="exportShipmentsToExcel()">📊 Export to Excel</button>
+                        <button class="btn btn-secondary" onclick="loadShipments()">🔄 Refresh</button>
+                    </div>
+                </div>
+
+                <!-- Enhanced Search Bar -->
+                <div class="search-section">
+                    <div class="search-bar-container">
+                        <div class="search-input-group">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="searchFilter" class="search-input"
+                                   placeholder="Search by Sales Order ID (INV001), Shipment ID (SHIP-001), Customer Name, or Tracking Number..."
+                                   onkeyup="filterShipments()">
+                            <button class="search-clear-btn" onclick="clearSearch()" title="Clear Search">✕</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Filters -->
+                <div class="filter-controls-enhanced">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>📊 Status:</label>
+                            <select id="statusFilter" onchange="filterShipments()">
+                                <option value="">All Statuses</option>
+                                <option value="preparing">📦 Preparing</option>
+                                <option value="shipped">🚚 Shipped</option>
+                                <option value="in_transit">🛫 In Transit</option>
+                                <option value="out_for_delivery">🚛 Out for Delivery</option>
+                                <option value="delivered">✅ Delivered</option>
+                                <option value="exception">⚠️ Exception</option>
+                                <option value="return">↩️ Return</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>🚚 Carrier:</label>
+                            <select id="carrierFilter" onchange="filterShipments()">
+                                <option value="">All Carriers</option>
+                                <option value="china_post">China Post</option>
+                                <option value="sf_express">SF Express</option>
+                                <option value="dhl">DHL</option>
+                                <option value="fedex">FedEx</option>
+                                <option value="ups">UPS</option>
+                                <option value="aramex">Aramex</option>
+                                <option value="ems">EMS</option>
+                                <option value="sea_freight">Sea Freight</option>
+                                <option value="air_freight">Air Freight</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>📦 Type:</label>
+                            <select id="typeFilter" onchange="filterShipments()">
+                                <option value="">All Types</option>
+                                <option value="door-to-door">🏠 Door-to-Door</option>
+                                <option value="container">📦 Container</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-row">
+                        <div class="filter-group date-range">
+                            <label>📅 Ship Date Range:</label>
+                            <input type="date" id="dateFrom" onchange="filterShipments()" placeholder="From">
+                            <span class="date-separator">to</span>
+                            <input type="date" id="dateTo" onchange="filterShipments()" placeholder="To">
+                        </div>
+                        <div class="filter-group">
+                            <label>🌍 Destination:</label>
+                            <input type="text" id="countryFilter" placeholder="Country..." onkeyup="filterShipments()">
+                        </div>
+                        <div class="filter-actions">
+                            <button class="btn btn-outline" onclick="clearAllFilters()">Clear All</button>
+                            <button class="btn btn-info" onclick="saveFilterPreset()">Save Filter</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Filter Buttons -->
+                <div class="quick-filters">
+                    <button class="quick-filter-btn" onclick="quickFilter('preparing')">📦 Preparing</button>
+                    <button class="quick-filter-btn" onclick="quickFilter('shipped')">🚚 Shipped</button>
+                    <button class="quick-filter-btn" onclick="quickFilter('in_transit')">🛫 In Transit</button>
+                    <button class="quick-filter-btn" onclick="quickFilter('delivered')">✅ Delivered</button>
+                    <button class="quick-filter-btn" onclick="quickFilter('exception')">⚠️ Issues</button>
+                </div>
+            </section>
+
+            <!-- Enhanced Shipments List -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>📋 Shipments List</h2>
+                    <div class="list-controls">
+                        <div class="view-toggle">
+                            <button class="view-btn active" onclick="setView('grid')" title="Grid View">⊞</button>
+                            <button class="view-btn" onclick="setView('table')" title="Table View">☰</button>
+                        </div>
+                        <div class="sort-controls">
+                            <label>Sort by:</label>
+                            <select id="sortBy" onchange="sortShipments()">
+                                <option value="created_desc">Newest First</option>
+                                <option value="created_asc">Oldest First</option>
+                                <option value="ship_date_desc">Ship Date (Latest)</option>
+                                <option value="ship_date_asc">Ship Date (Earliest)</option>
+                                <option value="status">Status</option>
+                                <option value="customer">Customer A-Z</option>
+                            </select>
+                        </div>
+                        <div class="results-info">
+                            <span id="resultsCount">0 shipments</span>
+                        </div>
+                        <div class="bulk-actions-container" id="shipmentsBulkActions" style="display: none;">
+                            <span class="bulk-selected-count" id="shipmentsSelectedCount">0 selected</span>
+                            <button class="btn btn-success btn-small" onclick="bulkUpdateShipmentStatus()">📊 Update Status</button>
+                            <button class="btn btn-info btn-small" onclick="bulkTrackShipments()">📍 Track Selected</button>
+                            <button class="btn btn-warning btn-small" onclick="bulkExportShipments()">📊 Export Selected</button>
+                            <button class="btn btn-danger btn-small" onclick="bulkDeleteShipments()">🗑️ Delete Selected</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid View -->
+                <div class="shipments-container" id="gridView">
+                    <div id="shipmentsGrid" class="shipments-grid-enhanced">
+                        <!-- Shipments will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Table View -->
+                <div class="shipments-container" id="tableView" style="display: none;">
+                    <div class="table-container">
+                        <table class="shipments-table">
+                            <thead>
+                                <tr>
+                                    <th>Shipment ID</th>
+                                    <th>Sales Order</th>
+                                    <th>Customer</th>
+                                    <th>Destination</th>
+                                    <th>Status</th>
+                                    <th>Carrier</th>
+                                    <th>Ship Date</th>
+                                    <th>Est. Delivery</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shipmentsTableBody">
+                                <!-- Table rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Shipment Analytics -->
+            <section class="section collapsible-section">
+                <div class="section-header collapsible-header" onclick="toggleSection('shippingAnalyticsSection')">
+                    <div class="header-content">
+                        <h2>📈 Shipping Analytics</h2>
+                        <div class="section-description">Performance metrics and trends</div>
+                    </div>
+                    <div class="collapse-controls">
+                        <span class="collapse-icon" id="shippingAnalyticsIcon">▼</span>
+                    </div>
+                </div>
+                <div id="shippingAnalyticsSection" class="collapsible-content">
+                    <div id="analyticsContent">
+                        <!-- Analytics will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ✅ STANDALONE SHIPMENT CREATION MODAL -->
+    <div id="standaloneShipmentModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h3>🚚 Create New Shipment</h3>
+                <p class="modal-subtitle">Select a sales order to create a shipment</p>
+                <span class="close" onclick="closeStandaloneShipmentModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Step 1: Sales Order Selection -->
+                <div id="salesOrderSelectionStep" class="shipment-creation-step">
+                    <div class="step-header">
+                        <h4>📋 Step 1: Select Sales Order</h4>
+                        <p>Choose a customer sales order to create a shipment for</p>
+                    </div>
+
+                    <!-- Sales Order Search and Filter -->
+                    <div class="sales-order-search-section">
+                        <div class="search-controls">
+                            <div class="search-input-group">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="salesOrderSearch" class="search-input"
+                                       placeholder="Search by Order ID, Customer Name..."
+                                       onkeyup="filterSalesOrdersForShipment()">
+                                <button class="search-clear-btn" onclick="clearSalesOrderSearch()" title="Clear Search">✕</button>
+                            </div>
+                        </div>
+
+                        <div class="sales-order-filters">
+                            <div class="filter-group">
+                                <label>Status:</label>
+                                <select id="salesOrderStatusFilter" onchange="filterSalesOrdersForShipment()">
+                                    <option value="">All Statuses</option>
+                                    <option value="Pending" selected>Pending</option>
+                                    <option value="Confirmed">Confirmed</option>
+                                    <option value="Shipped">Shipped</option>
+                                    <option value="Delivered">Delivered</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Customer:</label>
+                                <select id="salesOrderCustomerFilter" onchange="filterSalesOrdersForShipment()">
+                                    <option value="">All Customers</option>
+                                    <!-- Will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="filter-actions">
+                                <button class="btn btn-outline btn-sm" onclick="clearSalesOrderFilters()">Clear Filters</button>
+                                <button class="btn btn-info btn-sm" onclick="refreshSalesOrdersList()">🔄 Refresh</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sales Orders List -->
+                    <div class="sales-orders-container">
+                        <div class="sales-orders-header">
+                            <h5>Available Sales Orders</h5>
+                            <span id="salesOrdersCount" class="count-badge">0 orders</span>
+                        </div>
+                        <div id="salesOrdersList" class="sales-orders-list">
+                            <!-- Sales orders will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Shipment Details Form -->
+                <div id="shipmentDetailsStep" class="shipment-creation-step" style="display: none;">
+                    <div class="step-header">
+                        <h4>📦 Step 2: Shipment Details</h4>
+                        <p>Configure shipment details for the selected sales order</p>
+                        <div class="selected-order-info">
+                            <span id="selectedOrderDisplay">No order selected</span>
+                            <button class="btn btn-outline btn-sm" onclick="goBackToOrderSelection()">← Change Order</button>
+                        </div>
+                    </div>
+
+                    <!-- Shipment Form (will be populated dynamically) -->
+                    <div id="shipmentFormContainer">
+                        <!-- Form will be inserted here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeStandaloneShipmentModal()">Cancel</button>
+                <button id="proceedToDetailsBtn" class="btn btn-primary" onclick="proceedToShipmentDetails()" style="display: none;">
+                    Next: Shipment Details →
+                </button>
+                <button id="createShipmentBtn" class="btn btn-success" onclick="createStandaloneShipment()" style="display: none;">
+                    🚚 Create Shipment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Initialize shipments page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Shipments page loaded');
+            loadShipments();
+            updateShipmentStats();
+            loadShippingAnalytics();
+        });
+    </script>
+</body>
+</html>
