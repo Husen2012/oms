@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounting Dashboard - Sourcing Agent</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>💰 Accounting Dashboard</h2>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <span class="nav-icon">📋</span>
+                    Master Order
+                </a>
+                <a href="inventory.html" class="nav-link">
+                    <span class="nav-icon">📦</span>
+                    Inventory
+                </a>
+                <a href="shipments.html" class="nav-link">
+                    <span class="nav-icon">🚚</span>
+                    Shipments
+                </a>
+                <a href="accounting.html" class="nav-link active">
+                    <span class="nav-icon">💰</span>
+                    Accounting
+                </a>
+                <a href="customer-wallet.html" class="nav-link">
+                    <span class="nav-icon">💳</span>
+                    E-Wallet
+                </a>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="header">
+            <h1>💰 Accounting Dashboard</h1>
+            <p>Complete financial management and reporting system</p>
+        </header>
+
+        <!-- Quick Actions Bar -->
+        <section class="section">
+            <div class="section-header">
+                <h2>🚀 Quick Actions</h2>
+                <div class="section-actions">
+                    <button class="btn btn-success" onclick="runAccountingDemo()">
+                        🎯 Run Demo
+                    </button>
+                    <button class="btn btn-info" onclick="refreshAccountingData()">
+                        🔄 Refresh Data
+                    </button>
+                    <button class="btn btn-warning" onclick="exportAllReports()">
+                        📊 Export All Reports
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Financial Overview Dashboard -->
+        <section class="section">
+            <div class="section-header">
+                <h2>📊 Financial Overview</h2>
+            </div>
+            <div class="financial-overview-grid">
+                <div class="financial-card revenue-card">
+                    <div class="card-header">
+                        <h3>💰 Total Revenue</h3>
+                        <span class="card-icon">📈</span>
+                    </div>
+                    <div class="card-value" id="totalRevenue">$0.00</div>
+                    <div class="card-change positive" id="revenueChange">+0.0%</div>
+                </div>
+                <div class="financial-card expense-card">
+                    <div class="card-header">
+                        <h3>💸 Total Expenses</h3>
+                        <span class="card-icon">📉</span>
+                    </div>
+                    <div class="card-value" id="totalExpenses">$0.00</div>
+                    <div class="card-change negative" id="expenseChange">+0.0%</div>
+                </div>
+                <div class="financial-card profit-card">
+                    <div class="card-header">
+                        <h3>🎯 Net Profit</h3>
+                        <span class="card-icon">💎</span>
+                    </div>
+                    <div class="card-value" id="netProfit">$0.00</div>
+                    <div class="card-change" id="profitChange">0.0%</div>
+                </div>
+                <div class="financial-card cash-card">
+                    <div class="card-header">
+                        <h3>💵 Cash Balance</h3>
+                        <span class="card-icon">🏦</span>
+                    </div>
+                    <div class="card-value" id="cashBalance">$0.00</div>
+                    <div class="card-change" id="cashChange">0.0%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Financial Statements Section -->
+        <section class="section collapsible-section">
+            <div class="section-header collapsible-header" onclick="toggleSection('financialStatementsSection')">
+                <div class="header-content">
+                    <h2>📋 Financial Statements</h2>
+                    <div class="section-description">Profit & Loss, Balance Sheet, Cash Flow</div>
+                </div>
+                <div class="section-actions">
+                    <button class="btn btn-primary" onclick="generateAllFinancialStatements()">
+                        📊 Generate All
+                    </button>
+                </div>
+                <div class="collapse-controls">
+                    <span class="collapse-icon" id="financialStatementsIcon">▼</span>
+                </div>
+            </div>
+            <div id="financialStatementsSection" class="collapsible-content">
+                <!-- Financial Statements Tabs -->
+                <div class="tabs-container">
+                    <div class="tabs-header">
+                        <button class="tab-button active" onclick="switchFinancialTab('profitLoss')">📈 Profit & Loss</button>
+                        <button class="tab-button" onclick="switchFinancialTab('balanceSheet')">⚖️ Balance Sheet</button>
+                        <button class="tab-button" onclick="switchFinancialTab('cashFlow')">💰 Cash Flow</button>
+                        <button class="tab-button" onclick="switchFinancialTab('equity')">🏛️ Equity</button>
+                    </div>
+                    <div class="tabs-content">
+                        <div id="profitLossTab" class="tab-content active">
+                            <div class="statement-container" id="profitLossStatement">
+                                <!-- Profit & Loss will be populated here -->
+                            </div>
+                        </div>
+                        <div id="balanceSheetTab" class="tab-content">
+                            <div class="statement-container" id="balanceSheetStatement">
+                                <!-- Balance Sheet will be populated here -->
+                            </div>
+                        </div>
+                        <div id="cashFlowTab" class="tab-content">
+                            <div class="statement-container" id="cashFlowStatement">
+                                <!-- Cash Flow will be populated here -->
+                            </div>
+                        </div>
+                        <div id="equityTab" class="tab-content">
+                            <div class="statement-container" id="equityStatement">
+                                <!-- Equity Statement will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Partner Statements Section -->
+        <section class="section collapsible-section">
+            <div class="section-header collapsible-header" onclick="toggleSection('partnerStatementsSection')">
+                <div class="header-content">
+                    <h2>🤝 Partner Statements</h2>
+                    <div class="section-description">Customer, Supplier & Shipping Company Statements</div>
+                </div>
+                <div class="collapse-controls">
+                    <span class="collapse-icon" id="partnerStatementsIcon">▼</span>
+                </div>
+            </div>
+            <div id="partnerStatementsSection" class="collapsible-content">
+                <!-- Partner Statements Tabs -->
+                <div class="tabs-container">
+                    <div class="tabs-header">
+                        <button class="tab-button active" onclick="switchPartnerTab('customers')">👥 Customers</button>
+                        <button class="tab-button" onclick="switchPartnerTab('suppliers')">🏭 Suppliers</button>
+                        <button class="tab-button" onclick="switchPartnerTab('shipping')">🚚 Shipping</button>
+                    </div>
+                    <div class="tabs-content">
+                        <div id="customersTab" class="tab-content active">
+                            <div class="partner-statements-container" id="customerStatements">
+                                <!-- Customer statements will be populated here -->
+                            </div>
+                        </div>
+                        <div id="suppliersTab" class="tab-content">
+                            <div class="partner-statements-container" id="supplierStatements">
+                                <!-- Supplier statements will be populated here -->
+                            </div>
+                        </div>
+                        <div id="shippingTab" class="tab-content">
+                            <div class="partner-statements-container" id="shippingStatements">
+                                <!-- Shipping statements will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- General Ledger Section -->
+        <section class="section collapsible-section">
+            <div class="section-header collapsible-header" onclick="toggleSection('generalLedgerSection')">
+                <div class="header-content">
+                    <h2>📚 General Ledger</h2>
+                    <div class="section-description">Chart of Accounts, Journal Entries, Trial Balance</div>
+                </div>
+                <div class="section-actions">
+                    <button class="btn btn-primary" onclick="generateTrialBalance()">
+                        ⚖️ Trial Balance
+                    </button>
+                </div>
+                <div class="collapse-controls">
+                    <span class="collapse-icon" id="generalLedgerIcon">▼</span>
+                </div>
+            </div>
+            <div id="generalLedgerSection" class="collapsible-content">
+                <!-- General Ledger Tabs -->
+                <div class="tabs-container">
+                    <div class="tabs-header">
+                        <button class="tab-button active" onclick="switchLedgerTab('chartOfAccounts')">📊 Chart of Accounts</button>
+                        <button class="tab-button" onclick="switchLedgerTab('journalEntries')">📝 Journal Entries</button>
+                        <button class="tab-button" onclick="switchLedgerTab('trialBalance')">⚖️ Trial Balance</button>
+                    </div>
+                    <div class="tabs-content">
+                        <div id="chartOfAccountsTab" class="tab-content active">
+                            <div class="ledger-container" id="chartOfAccountsContent">
+                                <!-- Chart of Accounts will be populated here -->
+                            </div>
+                        </div>
+                        <div id="journalEntriesTab" class="tab-content">
+                            <div class="ledger-container" id="journalEntriesContent">
+                                <!-- Journal Entries will be populated here -->
+                            </div>
+                        </div>
+                        <div id="trialBalanceTab" class="tab-content">
+                            <div class="ledger-container" id="trialBalanceContent">
+                                <!-- Trial Balance will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics & Reports Section -->
+        <section class="section collapsible-section">
+            <div class="section-header collapsible-header" onclick="toggleSection('analyticsSection')">
+                <div class="header-content">
+                    <h2>📈 Analytics & Reports</h2>
+                    <div class="section-description">Business insights and performance metrics</div>
+                </div>
+                <div class="collapse-controls">
+                    <span class="collapse-icon" id="analyticsIcon">▼</span>
+                </div>
+            </div>
+            <div id="analyticsSection" class="collapsible-content">
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>📊 Profitability Analysis</h3>
+                        <div id="profitabilityAnalysis">
+                            <!-- Profitability metrics will be populated here -->
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>💰 Cash Flow Trends</h3>
+                        <div id="cashFlowTrends">
+                            <!-- Cash flow trends will be populated here -->
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>👥 Customer Analysis</h3>
+                        <div id="customerAnalysis">
+                            <!-- Customer analysis will be populated here -->
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>🏭 Supplier Performance</h3>
+                        <div id="supplierPerformance">
+                            <!-- Supplier performance will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Load all accounting modules -->
+    <script src="script.js"></script>
+    <script src="accounting-chart-of-accounts.js"></script>
+    <script src="accounting-journal-entries.js"></script>
+    <script src="accounting-general-ledger.js"></script>
+    <script src="accounting-partner-statements.js"></script>
+    <script src="accounting-financial-statements.js"></script>
+    <script src="accounting-integration.js"></script>
+    <script src="accounting-system-demo.js"></script>
+    
+    <!-- Accounting page specific JavaScript -->
+    <script>
+        // Initialize accounting page when loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏢 Initializing Accounting Dashboard...');
+            initializeAccountingPage();
+        });
+
+        // ==================== ACCOUNTING PAGE INITIALIZATION ====================
+        function initializeAccountingPage() {
+            try {
+                // Initialize all accounting systems
+                if (typeof initializeChartOfAccounts === 'function') {
+                    initializeChartOfAccounts();
+                }
+                if (typeof initializeJournalEntrySystem === 'function') {
+                    initializeJournalEntrySystem();
+                }
+                if (typeof initializeGeneralLedger === 'function') {
+                    initializeGeneralLedger();
+                }
+                if (typeof initializeAccountingIntegration === 'function') {
+                    initializeAccountingIntegration();
+                }
+
+                // Load initial data
+                loadFinancialOverview();
+                loadChartOfAccounts();
+
+                console.log('✅ Accounting Dashboard initialized successfully!');
+            } catch (error) {
+                console.error('❌ Error initializing accounting dashboard:', error);
+            }
+        }
+
+        // ==================== FINANCIAL OVERVIEW ====================
+        function loadFinancialOverview() {
+            try {
+                // Calculate financial metrics
+                const revenue = calculateTotalRevenue();
+                const expenses = calculateTotalExpenses();
+                const profit = revenue - expenses;
+                const cash = calculateCashBalance();
+
+                // Update dashboard cards
+                document.getElementById('totalRevenue').textContent = formatCurrency(revenue);
+                document.getElementById('totalExpenses').textContent = formatCurrency(expenses);
+                document.getElementById('netProfit').textContent = formatCurrency(profit);
+                document.getElementById('cashBalance').textContent = formatCurrency(cash);
+
+                // Update profit change indicator
+                const profitChangeElement = document.getElementById('profitChange');
+                if (profit > 0) {
+                    profitChangeElement.className = 'card-change positive';
+                    profitChangeElement.textContent = '+' + ((profit / (revenue || 1)) * 100).toFixed(1) + '%';
+                } else {
+                    profitChangeElement.className = 'card-change negative';
+                    profitChangeElement.textContent = ((profit / (revenue || 1)) * 100).toFixed(1) + '%';
+                }
+
+            } catch (error) {
+                console.error('Error loading financial overview:', error);
+            }
+        }
+
+        function calculateTotalRevenue() {
+            try {
+                if (typeof getAccountBalance === 'function') {
+                    const productSales = getAccountBalance('4010')?.balance || 0;
+                    const commissionRevenue = getAccountBalance('4020')?.balance || 0;
+                    const shippingRevenue = getAccountBalance('4030')?.balance || 0;
+                    return Math.abs(productSales) + Math.abs(commissionRevenue) + Math.abs(shippingRevenue);
+                }
+                return 0;
+            } catch (error) {
+                console.error('Error calculating revenue:', error);
+                return 0;
+            }
+        }
+
+        function calculateTotalExpenses() {
+            try {
+                if (typeof getAccountBalance === 'function') {
+                    const cogs = getAccountBalance('5010')?.balance || 0;
+                    const shippingExpense = getAccountBalance('6010')?.balance || 0;
+                    const operatingExpenses = getAccountBalance('6020')?.balance || 0;
+                    return Math.abs(cogs) + Math.abs(shippingExpense) + Math.abs(operatingExpenses);
+                }
+                return 0;
+            } catch (error) {
+                console.error('Error calculating expenses:', error);
+                return 0;
+            }
+        }
+
+        function calculateCashBalance() {
+            try {
+                if (typeof getAccountBalance === 'function') {
+                    const cash = getAccountBalance('1010')?.balance || 0;
+                    return cash;
+                }
+                return 0;
+            } catch (error) {
+                console.error('Error calculating cash balance:', error);
+                return 0;
+            }
+        }
+
+        // ==================== FINANCIAL STATEMENTS ====================
+        function generateAllFinancialStatements() {
+            try {
+                const startDate = '2024-01-01';
+                const endDate = '2024-12-31';
+
+                // Generate Profit & Loss
+                if (typeof generateProfitLossStatement === 'function') {
+                    const profitLoss = generateProfitLossStatement(startDate, endDate);
+                    displayProfitLossStatement(profitLoss);
+                }
+
+                // Generate Balance Sheet
+                if (typeof generateBalanceSheet === 'function') {
+                    const balanceSheet = generateBalanceSheet(endDate);
+                    displayBalanceSheet(balanceSheet);
+                }
+
+                // Generate Cash Flow
+                if (typeof generateCashFlowStatement === 'function') {
+                    const cashFlow = generateCashFlowStatement(startDate, endDate);
+                    displayCashFlowStatement(cashFlow);
+                }
+
+                // Generate Equity Statement
+                if (typeof generateStatementOfEquity === 'function') {
+                    const equity = generateStatementOfEquity(startDate, endDate);
+                    displayEquityStatement(equity);
+                }
+
+                console.log('✅ All financial statements generated successfully!');
+            } catch (error) {
+                console.error('❌ Error generating financial statements:', error);
+            }
+        }
+
+        function displayProfitLossStatement(statement) {
+            const container = document.getElementById('profitLossStatement');
+            if (!container || !statement) return;
+
+            let html = `
+                <div class="statement-header">
+                    <h3>📈 Profit & Loss Statement</h3>
+                    <p>Period: ${statement.period?.startDate || 'N/A'} to ${statement.period?.endDate || 'N/A'}</p>
+                </div>
+                <div class="statement-body">
+                    <div class="statement-section">
+                        <h4>💰 Revenue</h4>
+                        <div class="statement-line">
+                            <span>Product Sales</span>
+                            <span>${formatCurrency(statement.revenue?.productSales || 0)}</span>
+                        </div>
+                        <div class="statement-line">
+                            <span>Commission Revenue</span>
+                            <span>${formatCurrency(statement.revenue?.commissionRevenue || 0)}</span>
+                        </div>
+                        <div class="statement-line">
+                            <span>Shipping Revenue</span>
+                            <span>${formatCurrency(statement.revenue?.shippingRevenue || 0)}</span>
+                        </div>
+                        <div class="statement-line total-line">
+                            <span><strong>Total Revenue</strong></span>
+                            <span><strong>${formatCurrency(statement.revenue?.total || 0)}</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="statement-section">
+                        <h4>💸 Expenses</h4>
+                        <div class="statement-line">
+                            <span>Cost of Goods Sold</span>
+                            <span>${formatCurrency(statement.expenses?.costOfGoodsSold || 0)}</span>
+                        </div>
+                        <div class="statement-line">
+                            <span>Shipping Expenses</span>
+                            <span>${formatCurrency(statement.expenses?.shippingExpenses || 0)}</span>
+                        </div>
+                        <div class="statement-line">
+                            <span>Operating Expenses</span>
+                            <span>${formatCurrency(statement.expenses?.operatingExpenses || 0)}</span>
+                        </div>
+                        <div class="statement-line total-line">
+                            <span><strong>Total Expenses</strong></span>
+                            <span><strong>${formatCurrency(statement.expenses?.total || 0)}</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="statement-section">
+                        <div class="statement-line net-income-line">
+                            <span><strong>🎯 Net Income</strong></span>
+                            <span><strong>${formatCurrency(statement.netIncome || 0)}</strong></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount || 0);
+        }
+
+        function refreshAccountingData() {
+            console.log('🔄 Refreshing accounting data...');
+            loadFinancialOverview();
+            generateAllFinancialStatements();
+            loadPartnerStatements();
+            loadGeneralLedger();
+            console.log('✅ Accounting data refreshed!');
+        }
+
+        function runAccountingDemo() {
+            console.log('🎯 Running accounting demo...');
+            if (typeof runCompleteAccountingDemo === 'function') {
+                runCompleteAccountingDemo();
+                setTimeout(() => {
+                    refreshAccountingData();
+                }, 1000);
+            } else {
+                console.warn('⚠️ Accounting demo function not available');
+            }
+        }
+
+        function exportAllReports() {
+            console.log('📊 Exporting all reports...');
+            // Implementation for exporting reports
+            alert('📊 Export functionality will be implemented soon!');
+        }
+
+        // ==================== TAB SWITCHING ====================
+        function switchFinancialTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('#financialStatementsSection .tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('#financialStatementsSection .tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function switchPartnerTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('#partnerStatementsSection .tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('#partnerStatementsSection .tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function switchLedgerTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('#generalLedgerSection .tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('#generalLedgerSection .tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ==================== SECTION TOGGLE ====================
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const icon = document.getElementById(sectionId.replace('Section', 'Icon'));
+
+            if (section.style.display === 'none' || section.style.display === '') {
+                section.style.display = 'block';
+                icon.textContent = '▲';
+            } else {
+                section.style.display = 'none';
+                icon.textContent = '▼';
+            }
+        }
+
+        // ==================== CHART OF ACCOUNTS ====================
+        function loadChartOfAccounts() {
+            try {
+                const container = document.getElementById('chartOfAccountsContent');
+                if (!container) return;
+
+                let html = `
+                    <div class="chart-of-accounts">
+                        <div class="chart-header">
+                            <h3>📊 Chart of Accounts</h3>
+                        </div>
+                        <div class="accounts-table">
+                            <table class="accounting-table">
+                                <thead>
+                                    <tr>
+                                        <th>Account Code</th>
+                                        <th>Account Name</th>
+                                        <th>Type</th>
+                                        <th>Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+
+                // Load accounts from chart of accounts
+                if (typeof CHART_OF_ACCOUNTS !== 'undefined') {
+                    const allAccounts = getAllAccounts();
+                    allAccounts.forEach(account => {
+                        const balance = getAccountBalance(account.code)?.balance || 0;
+                        html += `
+                            <tr>
+                                <td>${account.code}</td>
+                                <td>${account.name}</td>
+                                <td>${account.type}</td>
+                                <td class="${balance >= 0 ? 'positive' : 'negative'}">${formatCurrency(balance)}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading chart of accounts:', error);
+            }
+        }
+
+        // ==================== PARTNER STATEMENTS ====================
+        function loadPartnerStatements() {
+            loadCustomerStatements();
+            loadSupplierStatements();
+            loadShippingStatements();
+        }
+
+        function loadCustomerStatements() {
+            try {
+                const container = document.getElementById('customerStatements');
+                if (!container) return;
+
+                let html = `
+                    <div class="partner-statements">
+                        <div class="statements-header">
+                            <h3>👥 Customer Account Statements</h3>
+                            <button class="btn btn-primary" onclick="generateCustomerStatement()">Generate Statement</button>
+                        </div>
+                        <div class="statements-list">
+                `;
+
+                // Sample customer statements
+                const customers = ['F16 Electronics', 'Beta Trading Co.', 'Gamma Industries'];
+                customers.forEach(customer => {
+                    html += `
+                        <div class="statement-card">
+                            <div class="statement-header">
+                                <h4>${customer}</h4>
+                                <span class="statement-balance">$0.00</span>
+                            </div>
+                            <div class="statement-actions">
+                                <button class="btn btn-small btn-info" onclick="viewCustomerStatement('${customer}')">View Details</button>
+                                <button class="btn btn-small btn-success" onclick="exportCustomerStatement('${customer}')">Export</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading customer statements:', error);
+            }
+        }
+
+        function loadSupplierStatements() {
+            try {
+                const container = document.getElementById('supplierStatements');
+                if (!container) return;
+
+                let html = `
+                    <div class="partner-statements">
+                        <div class="statements-header">
+                            <h3>🏭 Supplier Account Statements</h3>
+                            <button class="btn btn-primary" onclick="generateSupplierStatement()">Generate Statement</button>
+                        </div>
+                        <div class="statements-list">
+                `;
+
+                // Sample supplier statements
+                const suppliers = ['K2 Manufacturing', 'Beta Components', 'Gamma Supply'];
+                suppliers.forEach(supplier => {
+                    html += `
+                        <div class="statement-card">
+                            <div class="statement-header">
+                                <h4>${supplier}</h4>
+                                <span class="statement-balance">$0.00</span>
+                            </div>
+                            <div class="statement-actions">
+                                <button class="btn btn-small btn-info" onclick="viewSupplierStatement('${supplier}')">View Details</button>
+                                <button class="btn btn-small btn-success" onclick="exportSupplierStatement('${supplier}')">Export</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading supplier statements:', error);
+            }
+        }
+
+        function loadShippingStatements() {
+            try {
+                const container = document.getElementById('shippingStatements');
+                if (!container) return;
+
+                let html = `
+                    <div class="partner-statements">
+                        <div class="statements-header">
+                            <h3>🚚 Shipping Company Statements</h3>
+                            <button class="btn btn-primary" onclick="generateShippingStatement()">Generate Statement</button>
+                        </div>
+                        <div class="statements-list">
+                `;
+
+                // Sample shipping company statements
+                const shippingCompanies = ['DHL', 'FedEx', 'UPS', 'Aramex'];
+                shippingCompanies.forEach(company => {
+                    html += `
+                        <div class="statement-card">
+                            <div class="statement-header">
+                                <h4>${company}</h4>
+                                <span class="statement-balance">$0.00</span>
+                            </div>
+                            <div class="statement-actions">
+                                <button class="btn btn-small btn-info" onclick="viewShippingStatement('${company}')">View Details</button>
+                                <button class="btn btn-small btn-success" onclick="exportShippingStatement('${company}')">Export</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading shipping statements:', error);
+            }
+        }
+
+        // ==================== GENERAL LEDGER ====================
+        function loadGeneralLedger() {
+            loadJournalEntries();
+            generateTrialBalance();
+        }
+
+        function loadJournalEntries() {
+            try {
+                const container = document.getElementById('journalEntriesContent');
+                if (!container) return;
+
+                let html = `
+                    <div class="journal-entries">
+                        <div class="entries-header">
+                            <h3>📝 Journal Entries</h3>
+                            <button class="btn btn-primary" onclick="createJournalEntry()">New Entry</button>
+                        </div>
+                        <div class="entries-table">
+                            <table class="accounting-table">
+                                <thead>
+                                    <tr>
+                                        <th>Entry #</th>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Reference</th>
+                                        <th>Debit</th>
+                                        <th>Credit</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+
+                // Load journal entries if available
+                if (typeof journalEntries !== 'undefined' && journalEntries.length > 0) {
+                    journalEntries.slice(-10).forEach(entry => {
+                        html += `
+                            <tr>
+                                <td>${entry.entryNumber || 'N/A'}</td>
+                                <td>${entry.date || 'N/A'}</td>
+                                <td>${entry.description || 'N/A'}</td>
+                                <td>${entry.reference || 'N/A'}</td>
+                                <td>${formatCurrency(entry.totalDebits || 0)}</td>
+                                <td>${formatCurrency(entry.totalCredits || 0)}</td>
+                                <td><span class="status-badge ${entry.posted ? 'posted' : 'draft'}">${entry.posted ? 'Posted' : 'Draft'}</span></td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    html += `
+                        <tr>
+                            <td colspan="7" class="no-data">No journal entries found. Run the demo to see sample data.</td>
+                        </tr>
+                    `;
+                }
+
+                html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading journal entries:', error);
+            }
+        }
+
+        function generateTrialBalance() {
+            try {
+                const container = document.getElementById('trialBalanceContent');
+                if (!container) return;
+
+                let html = `
+                    <div class="trial-balance">
+                        <div class="balance-header">
+                            <h3>⚖️ Trial Balance</h3>
+                            <p>As of ${new Date().toLocaleDateString()}</p>
+                        </div>
+                        <div class="balance-table">
+                            <table class="accounting-table">
+                                <thead>
+                                    <tr>
+                                        <th>Account Code</th>
+                                        <th>Account Name</th>
+                                        <th>Debit</th>
+                                        <th>Credit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+
+                let totalDebits = 0;
+                let totalCredits = 0;
+
+                // Generate trial balance if function is available
+                if (typeof generateTrialBalance === 'function') {
+                    const trialBalance = generateTrialBalance();
+                    if (trialBalance && trialBalance.accounts) {
+                        trialBalance.accounts.forEach(account => {
+                            const debitAmount = account.debitBalance || 0;
+                            const creditAmount = account.creditBalance || 0;
+                            totalDebits += debitAmount;
+                            totalCredits += creditAmount;
+
+                            html += `
+                                <tr>
+                                    <td>${account.accountCode}</td>
+                                    <td>${account.accountName}</td>
+                                    <td class="amount">${debitAmount > 0 ? formatCurrency(debitAmount) : ''}</td>
+                                    <td class="amount">${creditAmount > 0 ? formatCurrency(creditAmount) : ''}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                }
+
+                html += `
+                                    <tr class="total-row">
+                                        <td colspan="2"><strong>TOTALS</strong></td>
+                                        <td class="amount"><strong>${formatCurrency(totalDebits)}</strong></td>
+                                        <td class="amount"><strong>${formatCurrency(totalCredits)}</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="balance-status">
+                            <span class="balance-indicator ${Math.abs(totalDebits - totalCredits) < 0.01 ? 'balanced' : 'unbalanced'}">
+                                ${Math.abs(totalDebits - totalCredits) < 0.01 ? '✅ Balanced' : '❌ Out of Balance'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error generating trial balance:', error);
+            }
+        }
+
+        // ==================== STATEMENT ACTIONS ====================
+        function viewCustomerStatement(customerName) {
+            console.log(`📋 Viewing statement for customer: ${customerName}`);
+            if (typeof generateCustomerStatement === 'function') {
+                const statement = generateCustomerStatement(customerName, '2024-01-01', '2024-12-31');
+                console.log('Customer Statement:', statement);
+            }
+        }
+
+        function viewSupplierStatement(supplierName) {
+            console.log(`📋 Viewing statement for supplier: ${supplierName}`);
+            if (typeof generateSupplierStatement === 'function') {
+                const statement = generateSupplierStatement(supplierName, '2024-01-01', '2024-12-31');
+                console.log('Supplier Statement:', statement);
+            }
+        }
+
+        function viewShippingStatement(companyName) {
+            console.log(`📋 Viewing statement for shipping company: ${companyName}`);
+            if (typeof generateShippingCompanyStatement === 'function') {
+                const statement = generateShippingCompanyStatement(companyName, '2024-01-01', '2024-12-31');
+                console.log('Shipping Statement:', statement);
+            }
+        }
+    </script>
+    </script>
+</body>
+</html>

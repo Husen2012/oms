@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer E-Wallet - Sourcing Agent</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>💳 Customer E-Wallet</h2>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <span class="nav-icon">📋</span>
+                    Master Order
+                </a>
+                <a href="inventory.html" class="nav-link">
+                    <span class="nav-icon">📦</span>
+                    Inventory
+                </a>
+                <a href="shipments.html" class="nav-link">
+                    <span class="nav-icon">🚚</span>
+                    Shipments
+                </a>
+                <a href="accounting.html" class="nav-link">
+                    <span class="nav-icon">💰</span>
+                    Accounting
+                </a>
+                <a href="customer-wallet.html" class="nav-link active">
+                    <span class="nav-icon">💳</span>
+                    E-Wallet
+                </a>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Customer Selection Header -->
+        <header class="wallet-header">
+            <div class="wallet-title">
+                <h1>💳 Customer E-Wallet</h1>
+                <p>Manage customer accounts and view financial statements</p>
+            </div>
+            <div class="customer-selector">
+                <label for="selectedCustomer">Select Customer:</label>
+                <select id="selectedCustomer" class="customer-select" onchange="loadCustomerWallet()">
+                    <option value="">Choose a customer...</option>
+                    <option value="F16">F16 Electronics</option>
+                    <option value="Beta Trading Co.">Beta Trading Co.</option>
+                    <option value="Gamma Industries">Gamma Industries</option>
+                    <option value="Delta Corp">Delta Corp</option>
+                </select>
+            </div>
+        </header>
+
+        <!-- Customer Wallet Dashboard -->
+        <div id="walletDashboard" class="wallet-dashboard" style="display: none;">
+            
+            <!-- Customer Info Card -->
+            <section class="customer-info-card">
+                <div class="customer-avatar">
+                    <div class="avatar-circle" id="customerAvatar">
+                        <span id="customerInitials">F16</span>
+                    </div>
+                </div>
+                <div class="customer-details">
+                    <h2 id="customerName">F16 Electronics</h2>
+                    <p id="customerStatus" class="customer-status good-standing">Good Standing</p>
+                    <div class="customer-meta">
+                        <span class="meta-item">
+                            <span class="meta-icon">📅</span>
+                            Customer since: <span id="customerSince">Jan 2024</span>
+                        </span>
+                        <span class="meta-item">
+                            <span class="meta-icon">📊</span>
+                            Total Orders: <span id="totalOrders">12</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="customer-actions">
+                    <button class="btn btn-primary" onclick="openPaymentModal()">
+                        💰 Make Payment
+                    </button>
+                    <button class="btn btn-info" onclick="downloadStatement()">
+                        📄 Download Statement
+                    </button>
+                </div>
+            </section>
+
+            <!-- Balance Overview Cards -->
+            <section class="balance-overview">
+                <div class="balance-card current-balance">
+                    <div class="balance-header">
+                        <h3>💰 Current Balance</h3>
+                        <span class="balance-icon">💳</span>
+                    </div>
+                    <div class="balance-amount" id="currentBalance">$0.00</div>
+                    <div class="balance-status" id="balanceStatus">
+                        <span class="status-indicator"></span>
+                        <span class="status-text">Up to date</span>
+                    </div>
+                </div>
+
+                <div class="balance-card credit-limit">
+                    <div class="balance-header">
+                        <h3>🎯 Credit Limit</h3>
+                        <span class="balance-icon">📊</span>
+                    </div>
+                    <div class="balance-amount" id="creditLimit">$10,000.00</div>
+                    <div class="credit-usage">
+                        <div class="credit-bar">
+                            <div class="credit-used" id="creditUsedBar" style="width: 25%"></div>
+                        </div>
+                        <span class="credit-text" id="creditUsedText">25% used</span>
+                    </div>
+                </div>
+
+                <div class="balance-card available-credit">
+                    <div class="balance-header">
+                        <h3>✅ Available Credit</h3>
+                        <span class="balance-icon">💎</span>
+                    </div>
+                    <div class="balance-amount positive" id="availableCredit">$7,500.00</div>
+                    <div class="balance-trend">
+                        <span class="trend-icon">📈</span>
+                        <span class="trend-text">Good credit health</span>
+                    </div>
+                </div>
+
+                <div class="balance-card overdue-amount">
+                    <div class="balance-header">
+                        <h3>⚠️ Overdue Amount</h3>
+                        <span class="balance-icon">⏰</span>
+                    </div>
+                    <div class="balance-amount warning" id="overdueAmount">$0.00</div>
+                    <div class="overdue-status" id="overdueStatus">
+                        <span class="status-text">No overdue payments</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions Bar -->
+            <section class="quick-actions">
+                <h3>🚀 Quick Actions</h3>
+                <div class="actions-grid">
+                    <button class="action-btn payment-btn" onclick="openPaymentModal()">
+                        <span class="action-icon">💰</span>
+                        <span class="action-text">Make Payment</span>
+                    </button>
+                    <button class="action-btn statement-btn" onclick="viewDetailedStatement()">
+                        <span class="action-icon">📊</span>
+                        <span class="action-text">View Statement</span>
+                    </button>
+                    <button class="action-btn history-btn" onclick="showTransactionHistory()">
+                        <span class="action-icon">📋</span>
+                        <span class="action-text">Transaction History</span>
+                    </button>
+                    <button class="action-btn support-btn" onclick="contactSupport()">
+                        <span class="action-icon">💬</span>
+                        <span class="action-text">Contact Support</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Transaction Timeline -->
+            <section class="transaction-timeline">
+                <div class="timeline-header">
+                    <h3>📈 Recent Transactions</h3>
+                    <div class="timeline-filters">
+                        <button class="filter-btn active" onclick="filterTransactions('all')">All</button>
+                        <button class="filter-btn" onclick="filterTransactions('payments')">Payments</button>
+                        <button class="filter-btn" onclick="filterTransactions('orders')">Orders</button>
+                        <button class="filter-btn" onclick="filterTransactions('credits')">Credits</button>
+                    </div>
+                </div>
+                <div class="timeline-container" id="transactionTimeline">
+                    <!-- Timeline items will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Payment Summary -->
+            <section class="payment-summary">
+                <div class="summary-header">
+                    <h3>💳 Payment Summary</h3>
+                    <select class="period-selector" onchange="updatePaymentSummary(this.value)">
+                        <option value="30">Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                        <option value="365">Last year</option>
+                        <option value="all">All time</option>
+                    </select>
+                </div>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-label">Total Paid</span>
+                        <span class="summary-value positive" id="totalPaid">$0.00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Total Orders</span>
+                        <span class="summary-value" id="totalOrderValue">$0.00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Average Order</span>
+                        <span class="summary-value" id="averageOrder">$0.00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Payment Score</span>
+                        <span class="summary-value excellent" id="paymentScore">Excellent</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alerts & Notifications -->
+            <section class="wallet-alerts" id="walletAlerts">
+                <h3>🔔 Alerts & Notifications</h3>
+                <div class="alerts-container" id="alertsContainer">
+                    <!-- Alerts will be populated by JavaScript -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state">
+            <div class="empty-icon">💳</div>
+            <h3>Select a Customer</h3>
+            <p>Choose a customer from the dropdown above to view their e-wallet and account information.</p>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content payment-modal">
+            <div class="modal-header">
+                <h3>💰 Make Payment</h3>
+                <span class="close" onclick="closePaymentModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="payment-form">
+                    <div class="form-group">
+                        <label>Payment Amount</label>
+                        <div class="amount-input-group">
+                            <span class="currency-symbol">$</span>
+                            <input type="number" id="paymentAmount" placeholder="0.00" step="0.01" min="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Method</label>
+                        <select id="paymentMethod">
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="credit_card">Credit Card</option>
+                            <option value="paypal">PayPal</option>
+                            <option value="check">Check</option>
+                            <option value="cash">Cash</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Reference Number (Optional)</label>
+                        <input type="text" id="paymentReference" placeholder="Enter reference number">
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Notes</label>
+                        <textarea id="paymentNotes" placeholder="Add any notes about this payment..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePaymentModal()">Cancel</button>
+                <button class="btn btn-success" onclick="processPayment()">Process Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Statement Modal -->
+    <div id="statementModal" class="modal large-modal">
+        <div class="modal-content statement-modal">
+            <div class="modal-header">
+                <h3>📄 Customer Account Statement</h3>
+                <div class="statement-actions">
+                    <button class="btn btn-info btn-small" onclick="printStatement()">🖨️ Print</button>
+                    <button class="btn btn-success btn-small" onclick="downloadStatementPDF()">📄 Download PDF</button>
+                    <button class="btn btn-warning btn-small" onclick="emailStatement()">📧 Email</button>
+                </div>
+                <span class="close" onclick="closeStatementModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="statementContent" class="statement-content">
+                    <!-- Statement content will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeStatementModal()">Close</button>
+                <button class="btn btn-primary" onclick="openPaymentModal()">💰 Make Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript modules -->
+    <script src="script.js"></script>
+    <script src="accounting-chart-of-accounts.js"></script>
+    <script src="accounting-journal-entries.js"></script>
+    <script src="accounting-general-ledger.js"></script>
+    <script src="accounting-partner-statements.js"></script>
+    <script src="accounting-financial-statements.js"></script>
+    <script src="accounting-integration.js"></script>
+    <script src="accounting-system-demo.js"></script>
+
+    <!-- E-Wallet JavaScript -->
+    <script>
+        // ==================== E-WALLET FUNCTIONALITY ====================
+
+        let currentCustomer = null;
+        let customerData = {};
+
+        // Sample customer data
+        const sampleCustomers = {
+            'F16': {
+                name: 'F16 Electronics',
+                initials: 'F16',
+                status: 'good-standing',
+                since: 'Jan 2024',
+                totalOrders: 12,
+                currentBalance: -2500.00, // Negative means they owe us
+                creditLimit: 10000.00,
+                transactions: [
+                    { id: 'TXN-001', date: '2024-12-15', type: 'order', description: 'Sales Order #SO-001', amount: -1500.00, status: 'pending' },
+                    { id: 'TXN-002', date: '2024-12-10', type: 'payment', description: 'Payment Received', amount: 2000.00, status: 'completed' },
+                    { id: 'TXN-003', date: '2024-12-05', type: 'order', description: 'Sales Order #SO-002', amount: -3000.00, status: 'completed' },
+                    { id: 'TXN-004', date: '2024-11-28', type: 'credit', description: 'Credit Adjustment', amount: 500.00, status: 'completed' }
+                ]
+            },
+            'Beta Trading Co.': {
+                name: 'Beta Trading Co.',
+                initials: 'BTC',
+                status: 'good-standing',
+                since: 'Mar 2024',
+                totalOrders: 8,
+                currentBalance: 1200.00, // Positive means we owe them (credit balance)
+                creditLimit: 15000.00,
+                transactions: [
+                    { id: 'TXN-005', date: '2024-12-12', type: 'payment', description: 'Overpayment Received', amount: 3200.00, status: 'completed' },
+                    { id: 'TXN-006', date: '2024-12-08', type: 'order', description: 'Sales Order #SO-003', amount: -2000.00, status: 'completed' }
+                ]
+            },
+            'Gamma Industries': {
+                name: 'Gamma Industries',
+                initials: 'GI',
+                status: 'overdue',
+                since: 'Feb 2024',
+                totalOrders: 15,
+                currentBalance: -5800.00,
+                creditLimit: 8000.00,
+                transactions: [
+                    { id: 'TXN-007', date: '2024-11-15', type: 'order', description: 'Sales Order #SO-004', amount: -5800.00, status: 'overdue' }
+                ]
+            }
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('💳 Initializing Customer E-Wallet...');
+            initializeWallet();
+        });
+
+        function initializeWallet() {
+            // Initialize accounting systems if available
+            if (typeof initializeAccountingIntegration === 'function') {
+                initializeAccountingIntegration();
+            }
+
+            // Load sample data for demo
+            loadSampleData();
+
+            console.log('✅ Customer E-Wallet initialized successfully!');
+        }
+
+        function loadSampleData() {
+            // This would normally load from your accounting system
+            customerData = sampleCustomers;
+        }
+
+        // ==================== CUSTOMER SELECTION ====================
+        function loadCustomerWallet() {
+            const selectedCustomer = document.getElementById('selectedCustomer').value;
+
+            if (!selectedCustomer) {
+                showEmptyState();
+                return;
+            }
+
+            currentCustomer = selectedCustomer;
+            const customer = customerData[selectedCustomer];
+
+            if (!customer) {
+                console.error('Customer data not found:', selectedCustomer);
+                return;
+            }
+
+            hideEmptyState();
+            displayCustomerInfo(customer);
+            displayBalanceOverview(customer);
+            displayTransactionTimeline(customer);
+            displayPaymentSummary(customer);
+            displayAlerts(customer);
+        }
+
+        function showEmptyState() {
+            document.getElementById('walletDashboard').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
+        }
+
+        function hideEmptyState() {
+            document.getElementById('walletDashboard').style.display = 'block';
+            document.getElementById('emptyState').style.display = 'none';
+        }
+
+        // ==================== CUSTOMER INFO DISPLAY ====================
+        function displayCustomerInfo(customer) {
+            document.getElementById('customerInitials').textContent = customer.initials;
+            document.getElementById('customerName').textContent = customer.name;
+            document.getElementById('customerSince').textContent = customer.since;
+            document.getElementById('totalOrders').textContent = customer.totalOrders;
+
+            const statusElement = document.getElementById('customerStatus');
+            statusElement.textContent = customer.status === 'good-standing' ? 'Good Standing' :
+                                      customer.status === 'overdue' ? 'Overdue' : 'Under Review';
+            statusElement.className = `customer-status ${customer.status}`;
+
+            // Set avatar color based on status
+            const avatar = document.getElementById('customerAvatar');
+            avatar.className = `avatar-circle ${customer.status}`;
+        }
+
+        // ==================== BALANCE OVERVIEW ====================
+        function displayBalanceOverview(customer) {
+            const currentBalance = customer.currentBalance;
+            const creditLimit = customer.creditLimit;
+            const availableCredit = creditLimit + currentBalance; // If balance is negative, this reduces available credit
+            const overdueAmount = customer.status === 'overdue' ? Math.abs(currentBalance) : 0;
+
+            // Current Balance
+            const balanceElement = document.getElementById('currentBalance');
+            balanceElement.textContent = formatCurrency(Math.abs(currentBalance));
+            balanceElement.className = `balance-amount ${currentBalance >= 0 ? 'positive' : 'negative'}`;
+
+            // Balance Status
+            const statusElement = document.getElementById('balanceStatus');
+            if (currentBalance > 0) {
+                statusElement.innerHTML = '<span class="status-indicator positive"></span><span class="status-text">Credit Balance</span>';
+            } else if (customer.status === 'overdue') {
+                statusElement.innerHTML = '<span class="status-indicator negative"></span><span class="status-text">Payment Overdue</span>';
+            } else {
+                statusElement.innerHTML = '<span class="status-indicator neutral"></span><span class="status-text">Outstanding Balance</span>';
+            }
+
+            // Credit Limit
+            document.getElementById('creditLimit').textContent = formatCurrency(creditLimit);
+
+            // Credit Usage
+            const creditUsedPercentage = Math.max(0, Math.min(100, (Math.abs(currentBalance) / creditLimit) * 100));
+            document.getElementById('creditUsedBar').style.width = creditUsedPercentage + '%';
+            document.getElementById('creditUsedText').textContent = Math.round(creditUsedPercentage) + '% used';
+
+            // Available Credit
+            const availableCreditElement = document.getElementById('availableCredit');
+            availableCreditElement.textContent = formatCurrency(Math.max(0, availableCredit));
+            availableCreditElement.className = `balance-amount ${availableCredit > creditLimit * 0.5 ? 'positive' : 'warning'}`;
+
+            // Overdue Amount
+            const overdueElement = document.getElementById('overdueAmount');
+            overdueElement.textContent = formatCurrency(overdueAmount);
+            overdueElement.className = `balance-amount ${overdueAmount > 0 ? 'negative' : 'positive'}`;
+
+            const overdueStatusElement = document.getElementById('overdueStatus');
+            overdueStatusElement.innerHTML = overdueAmount > 0 ?
+                '<span class="status-text warning">Payment overdue</span>' :
+                '<span class="status-text">No overdue payments</span>';
+        }
+
+        // ==================== TRANSACTION TIMELINE ====================
+        function displayTransactionTimeline(customer) {
+            const timeline = document.getElementById('transactionTimeline');
+            let html = '';
+
+            customer.transactions.forEach(transaction => {
+                const isPositive = transaction.amount > 0;
+                const icon = getTransactionIcon(transaction.type);
+                const statusClass = getStatusClass(transaction.status);
+
+                html += `
+                    <div class="timeline-item ${transaction.type}">
+                        <div class="timeline-icon ${statusClass}">
+                            ${icon}
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-header">
+                                <h4>${transaction.description}</h4>
+                                <span class="timeline-amount ${isPositive ? 'positive' : 'negative'}">
+                                    ${isPositive ? '+' : ''}${formatCurrency(transaction.amount)}
+                                </span>
+                            </div>
+                            <div class="timeline-meta">
+                                <span class="timeline-date">${formatDate(transaction.date)}</span>
+                                <span class="timeline-status ${statusClass}">${transaction.status}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            timeline.innerHTML = html;
+        }
+
+        function getTransactionIcon(type) {
+            switch(type) {
+                case 'payment': return '💰';
+                case 'order': return '🛒';
+                case 'credit': return '✅';
+                case 'refund': return '🔄';
+                default: return '📄';
+            }
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'completed': return 'success';
+                case 'pending': return 'warning';
+                case 'overdue': return 'danger';
+                case 'cancelled': return 'secondary';
+                default: return 'info';
+            }
+        }
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(Math.abs(amount));
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // ==================== PAYMENT SUMMARY ====================
+        function displayPaymentSummary(customer) {
+            const transactions = customer.transactions;
+            const payments = transactions.filter(t => t.type === 'payment');
+            const orders = transactions.filter(t => t.type === 'order');
+
+            const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+            const totalOrderValue = Math.abs(orders.reduce((sum, o) => sum + o.amount, 0));
+            const averageOrder = orders.length > 0 ? totalOrderValue / orders.length : 0;
+
+            document.getElementById('totalPaid').textContent = formatCurrency(totalPaid);
+            document.getElementById('totalOrderValue').textContent = formatCurrency(totalOrderValue);
+            document.getElementById('averageOrder').textContent = formatCurrency(averageOrder);
+
+            // Payment Score
+            const paymentScore = calculatePaymentScore(customer);
+            const scoreElement = document.getElementById('paymentScore');
+            scoreElement.textContent = paymentScore.text;
+            scoreElement.className = `summary-value ${paymentScore.class}`;
+        }
+
+        function calculatePaymentScore(customer) {
+            if (customer.status === 'overdue') {
+                return { text: 'Needs Attention', class: 'warning' };
+            } else if (customer.currentBalance > 0) {
+                return { text: 'Excellent', class: 'excellent' };
+            } else if (Math.abs(customer.currentBalance) < customer.creditLimit * 0.5) {
+                return { text: 'Good', class: 'positive' };
+            } else {
+                return { text: 'Fair', class: 'neutral' };
+            }
+        }
+
+        // ==================== ALERTS & NOTIFICATIONS ====================
+        function displayAlerts(customer) {
+            const alertsContainer = document.getElementById('alertsContainer');
+            let alerts = [];
+
+            // Check for overdue payments
+            if (customer.status === 'overdue') {
+                alerts.push({
+                    type: 'danger',
+                    icon: '⚠️',
+                    title: 'Payment Overdue',
+                    message: `Payment of ${formatCurrency(Math.abs(customer.currentBalance))} is overdue. Please make payment to avoid service interruption.`,
+                    action: 'Make Payment'
+                });
+            }
+
+            // Check credit limit usage
+            const creditUsage = Math.abs(customer.currentBalance) / customer.creditLimit;
+            if (creditUsage > 0.8) {
+                alerts.push({
+                    type: 'warning',
+                    icon: '📊',
+                    title: 'Credit Limit Warning',
+                    message: `You are using ${Math.round(creditUsage * 100)}% of your credit limit. Consider making a payment.`,
+                    action: 'View Details'
+                });
+            }
+
+            // Positive balance alert
+            if (customer.currentBalance > 0) {
+                alerts.push({
+                    type: 'success',
+                    icon: '✅',
+                    title: 'Credit Balance Available',
+                    message: `You have a credit balance of ${formatCurrency(customer.currentBalance)} available for future orders.`,
+                    action: 'Use Credit'
+                });
+            }
+
+            // No alerts
+            if (alerts.length === 0) {
+                alerts.push({
+                    type: 'info',
+                    icon: '💡',
+                    title: 'All Good!',
+                    message: 'Your account is in good standing with no pending issues.',
+                    action: null
+                });
+            }
+
+            let html = '';
+            alerts.forEach(alert => {
+                html += `
+                    <div class="alert alert-${alert.type}">
+                        <div class="alert-icon">${alert.icon}</div>
+                        <div class="alert-content">
+                            <h4>${alert.title}</h4>
+                            <p>${alert.message}</p>
+                            ${alert.action ? `<button class="alert-action btn btn-small btn-${alert.type}">${alert.action}</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            alertsContainer.innerHTML = html;
+        }
+
+        // ==================== MODAL FUNCTIONS ====================
+        function openPaymentModal() {
+            if (!currentCustomer) {
+                alert('Please select a customer first.');
+                return;
+            }
+
+            const customer = customerData[currentCustomer];
+            const outstandingBalance = Math.abs(Math.min(0, customer.currentBalance));
+
+            // Pre-fill payment amount with outstanding balance
+            document.getElementById('paymentAmount').value = outstandingBalance.toFixed(2);
+            document.getElementById('paymentModal').style.display = 'block';
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            // Clear form
+            document.getElementById('paymentAmount').value = '';
+            document.getElementById('paymentReference').value = '';
+            document.getElementById('paymentNotes').value = '';
+        }
+
+        function processPayment() {
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            const method = document.getElementById('paymentMethod').value;
+            const reference = document.getElementById('paymentReference').value;
+            const notes = document.getElementById('paymentNotes').value;
+
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid payment amount.');
+                return;
+            }
+
+            // Process payment (this would integrate with your payment system)
+            const customer = customerData[currentCustomer];
+
+            // Add payment transaction
+            const paymentTransaction = {
+                id: `TXN-${Date.now()}`,
+                date: new Date().toISOString().split('T')[0],
+                type: 'payment',
+                description: `Payment via ${method}`,
+                amount: amount,
+                status: 'completed',
+                reference: reference,
+                notes: notes
+            };
+
+            customer.transactions.unshift(paymentTransaction);
+            customer.currentBalance += amount;
+
+            // Create accounting entry if available
+            if (typeof createCustomerPaymentEntry === 'function') {
+                createCustomerPaymentEntry(currentCustomer, amount, method, reference);
+            }
+
+            // Refresh display
+            loadCustomerWallet();
+            closePaymentModal();
+
+            // Show success message
+            alert(`Payment of ${formatCurrency(amount)} processed successfully!`);
+        }
+
+        // ==================== ACTION FUNCTIONS ====================
+        function viewDetailedStatement() {
+            if (!currentCustomer) return;
+
+            const customer = customerData[currentCustomer];
+            generateDetailedStatement(customer);
+            document.getElementById('statementModal').style.display = 'block';
+        }
+
+        function generateDetailedStatement(customer) {
+            const statementContent = document.getElementById('statementContent');
+            const currentDate = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            // Calculate statement totals
+            const transactions = customer.transactions;
+            const totalCharges = Math.abs(transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0));
+            const totalPayments = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
+            const currentBalance = customer.currentBalance;
+
+            // Calculate aging
+            const aging = calculateAging(transactions);
+
+            // Build HTML in parts to avoid template literal issues
+            let html = '<div class="statement-document">';
+
+            // Statement Header
+            html += '<div class="statement-header-section">';
+            html += '<div class="company-info">';
+            html += '<h2>🏢 Sourcing Agent</h2>';
+            html += '<p>123 Business Street<br>Business City, BC 12345<br>Phone: (555) 123-4567<br>Email: billing@sourcingagent.com</p>';
+            html += '</div>';
+            html += '<div class="statement-info">';
+            html += '<h1>ACCOUNT STATEMENT</h1>';
+            html += '<div class="statement-details">';
+            html += '<div class="detail-row"><span class="detail-label">Statement Date:</span><span class="detail-value">' + currentDate + '</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">Statement Period:</span><span class="detail-value">January 1, 2024 - December 31, 2024</span></div>';
+            html += '<div class="detail-row"><span class="detail-label">Account Number:</span><span class="detail-value">ACC-' + customer.initials + '-001</span></div>';
+            html += '</div></div></div>';
+
+            // Customer Information
+            html += '<div class="customer-info-section">';
+            html += '<h3>📋 Customer Information</h3>';
+            html += '<div class="customer-details-grid">';
+            html += '<div class="customer-detail"><span class="detail-label">Customer Name:</span><span class="detail-value">' + customer.name + '</span></div>';
+            html += '<div class="customer-detail"><span class="detail-label">Customer Since:</span><span class="detail-value">' + customer.since + '</span></div>';
+            html += '<div class="customer-detail"><span class="detail-label">Total Orders:</span><span class="detail-value">' + customer.totalOrders + '</span></div>';
+            const statusText = customer.status === 'good-standing' ? 'Good Standing' : customer.status === 'overdue' ? 'Overdue' : 'Under Review';
+            html += '<div class="customer-detail"><span class="detail-label">Account Status:</span><span class="detail-value status-' + customer.status + '">' + statusText + '</span></div>';
+            html += '</div></div>';
+
+            // Account Summary
+            html += '<div class="account-summary-section">';
+            html += '<h3>💰 Account Summary</h3>';
+            html += '<div class="summary-table">';
+            html += '<table class="statement-table">';
+            html += '<tr><td class="summary-label">Previous Balance:</td><td class="summary-value">$0.00</td></tr>';
+            html += '<tr><td class="summary-label">Total Charges:</td><td class="summary-value negative">' + formatCurrency(totalCharges) + '</td></tr>';
+            html += '<tr><td class="summary-label">Total Payments:</td><td class="summary-value positive">' + formatCurrency(totalPayments) + '</td></tr>';
+            const balanceClass = currentBalance >= 0 ? 'positive' : 'negative';
+            html += '<tr class="summary-total"><td class="summary-label"><strong>Current Balance:</strong></td><td class="summary-value ' + balanceClass + '"><strong>' + formatCurrency(Math.abs(currentBalance)) + '</strong></td></tr>';
+            html += '</table></div></div>';
+
+            // Credit Information
+            html += '<div class="credit-info-section">';
+            html += '<h3>🎯 Credit Information</h3>';
+            html += '<div class="credit-details-grid">';
+            html += '<div class="credit-detail"><span class="detail-label">Credit Limit:</span><span class="detail-value">' + formatCurrency(customer.creditLimit) + '</span></div>';
+            html += '<div class="credit-detail"><span class="detail-label">Available Credit:</span><span class="detail-value">' + formatCurrency(Math.max(0, customer.creditLimit + customer.currentBalance)) + '</span></div>';
+            html += '<div class="credit-detail"><span class="detail-label">Credit Used:</span><span class="detail-value">' + Math.round((Math.abs(Math.min(0, customer.currentBalance)) / customer.creditLimit) * 100) + '%</span></div>';
+            html += '</div></div>';
+
+            // Transaction History
+            html += '<div class="transaction-history-section">';
+            html += '<h3>📈 Transaction History</h3>';
+            html += '<div class="transactions-table">';
+            html += '<table class="statement-table">';
+            html += '<thead><tr><th>Date</th><th>Description</th><th>Reference</th><th>Charges</th><th>Payments</th><th>Balance</th></tr></thead>';
+            html += '<tbody>';
+
+            // Add transactions
+            let runningBalance = 0;
+            transactions.forEach(transaction => {
+                runningBalance += transaction.amount;
+                const isCharge = transaction.amount < 0;
+                const chargeAmount = isCharge ? formatCurrency(Math.abs(transaction.amount)) : '';
+                const paymentAmount = !isCharge ? formatCurrency(transaction.amount) : '';
+                const balanceAmount = formatCurrency(Math.abs(runningBalance));
+                const balanceClass = runningBalance >= 0 ? 'positive' : 'negative';
+                const chargeClass = isCharge ? 'negative' : '';
+                const paymentClass = !isCharge ? 'positive' : '';
+
+                html += '<tr class="transaction-row">';
+                html += '<td>' + formatDate(transaction.date) + '</td>';
+                html += '<td>' + transaction.description + '</td>';
+                html += '<td>' + transaction.id + '</td>';
+                html += '<td class="amount-cell ' + chargeClass + '">' + chargeAmount + '</td>';
+                html += '<td class="amount-cell ' + paymentClass + '">' + paymentAmount + '</td>';
+                html += '<td class="amount-cell ' + balanceClass + '">' + balanceAmount + '</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div></div>';
+
+            // Aging Analysis
+            html += '<div class="aging-section">';
+            html += '<h3>📊 Aging Analysis</h3>';
+            html += '<div class="aging-table">';
+            html += '<table class="statement-table">';
+            html += '<thead><tr><th>Current</th><th>1-30 Days</th><th>31-60 Days</th><th>61-90 Days</th><th>Over 90 Days</th><th>Total</th></tr></thead>';
+            html += '<tbody><tr>';
+            html += '<td class="amount-cell">' + formatCurrency(aging.current) + '</td>';
+            html += '<td class="amount-cell">' + formatCurrency(aging.days30) + '</td>';
+            html += '<td class="amount-cell">' + formatCurrency(aging.days60) + '</td>';
+            html += '<td class="amount-cell">' + formatCurrency(aging.days90) + '</td>';
+            html += '<td class="amount-cell">' + formatCurrency(aging.over90) + '</td>';
+            html += '<td class="amount-cell total">' + formatCurrency(aging.total) + '</td>';
+            html += '</tr></tbody></table></div></div>';
+
+            // Payment Information section removed as requested
+
+            // Footer
+            html += '<div class="statement-footer">';
+            html += '<p>Thank you for your business! For questions about this statement, please contact us at billing@sourcingagent.com or (555) 123-4567.</p>';
+            html += '<p class="disclaimer">This statement reflects all transactions as of ' + currentDate + '. Please review and contact us immediately if you have any questions or discrepancies.</p>';
+            html += '</div>';
+
+            html += '</div>'; // Close statement-document
+
+            statementContent.innerHTML = html;
+        }
+
+        function calculateAging(transactions) {
+            const today = new Date();
+            const aging = {
+                current: 0,
+                days30: 0,
+                days60: 0,
+                days90: 0,
+                over90: 0,
+                total: 0
+            };
+
+            transactions.forEach(transaction => {
+                if (transaction.amount < 0 && transaction.status !== 'completed') {
+                    const transactionDate = new Date(transaction.date);
+                    const daysDiff = Math.floor((today - transactionDate) / (1000 * 60 * 60 * 24));
+                    const amount = Math.abs(transaction.amount);
+
+                    if (daysDiff <= 30) {
+                        aging.current += amount;
+                    } else if (daysDiff <= 60) {
+                        aging.days30 += amount;
+                    } else if (daysDiff <= 90) {
+                        aging.days60 += amount;
+                    } else if (daysDiff <= 120) {
+                        aging.days90 += amount;
+                    } else {
+                        aging.over90 += amount;
+                    }
+
+                    aging.total += amount;
+                }
+            });
+
+            return aging;
+        }
+
+        function closeStatementModal() {
+            document.getElementById('statementModal').style.display = 'none';
+        }
+
+        function printStatement() {
+            const statementContent = document.getElementById('statementContent').innerHTML;
+            const printWindow = window.open('', '_blank');
+
+            const printHTML = '<html>' +
+                '<head>' +
+                '<title>Customer Statement</title>' +
+                '<style>' +
+                'body { font-family: Arial, sans-serif; margin: 20px; }' +
+                '.statement-document { max-width: 800px; margin: 0 auto; }' +
+                '.statement-table { width: 100%; border-collapse: collapse; margin: 10px 0; }' +
+                '.statement-table th, .statement-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }' +
+                '.statement-table th { background-color: #f5f5f5; }' +
+                '.positive { color: #10b981; }' +
+                '.negative { color: #ef4444; }' +
+                '.amount-cell { text-align: right; }' +
+                '@media print { body { margin: 0; } }' +
+                '</style>' +
+                '</head>' +
+                '<body>' + statementContent + '</body>' +
+                '</html>';
+
+            printWindow.document.write(printHTML);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function downloadStatementPDF() {
+            alert('PDF download feature will be implemented with jsPDF integration.');
+        }
+
+        function emailStatement() {
+            if (!currentCustomer) return;
+
+            const customer = customerData[currentCustomer];
+            const subject = 'Account Statement - ' + customer.name;
+            const body = 'Dear ' + customer.name + ',\n\nPlease find your account statement attached.\n\nIf you have any questions, please don\'t hesitate to contact us.\n\nBest regards,\nSourcing Agent Team';
+
+            const mailtoLink = 'mailto:customer@example.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+            window.open(mailtoLink);
+        }
+
+        function showTransactionHistory() {
+            if (!currentCustomer) return;
+
+            // This could open a detailed transaction history modal
+            alert('Transaction history feature coming soon!');
+        }
+
+        function contactSupport() {
+            alert('Support contact: support@sourcingagent.com\nPhone: +1-555-0123');
+        }
+
+        function downloadStatement() {
+            if (!currentCustomer) return;
+
+            // This would generate and download a PDF statement
+            alert('Statement download feature coming soon!');
+        }
+
+        function filterTransactions(type) {
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Filter timeline items
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            timelineItems.forEach(item => {
+                if (type === 'all' || item.classList.contains(type)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function updatePaymentSummary(period) {
+            // This would filter the payment summary by the selected period
+            console.log('Updating payment summary for period:', period);
+        }
+
+        // ==================== THEME TOGGLE ====================
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const themeIcon = document.querySelector('.theme-icon');
+            themeIcon.textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
+        }
+    </script>
+</body>
+</html>
