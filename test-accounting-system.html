@@ -124,6 +124,14 @@
         </div>
 
         <div class="test-section">
+            <h3>💳 Supplier E-Wallet System</h3>
+            <button class="test-button success" onclick="demoEWalletSystem()">🚀 Demo E-Wallet System</button>
+            <button class="test-button" onclick="openEWalletInterface()">💳 Open E-Wallet Interface</button>
+            <button class="test-button" onclick="testSupplierWallet()">🏭 Test Supplier Wallet</button>
+            <button class="test-button" onclick="testWalletDashboard()">📊 Test Wallet Dashboard</button>
+        </div>
+
+        <div class="test-section">
             <h3>📋 Output Console</h3>
             <button class="test-button" onclick="clearOutput()">🗑️ Clear Output</button>
             <div id="output" class="output">Ready for testing...\n</div>
@@ -138,6 +146,7 @@
     <script src="accounting-financial-statements.js"></script>
     <script src="accounting-integration.js"></script>
     <script src="accounting-system-demo.js"></script>
+    <script src="supplier-ewallet-system.js"></script>
 
     <script>
         // Override console.log to display in our output div
@@ -411,6 +420,68 @@
 
         function clearOutput() {
             document.getElementById('output').textContent = 'Output cleared...\n';
+        }
+
+        // E-Wallet System Test Functions
+        function demoEWalletSystem() {
+            console.log('💳 Starting Supplier E-Wallet System Demo...');
+            try {
+                if (typeof demoSupplierEWalletSystem === 'function') {
+                    demoSupplierEWalletSystem();
+                } else {
+                    console.log('❌ E-Wallet demo function not available');
+                }
+            } catch (error) {
+                console.error('E-Wallet demo failed:', error);
+            }
+        }
+
+        function openEWalletInterface() {
+            console.log('💳 Opening E-Wallet Interface...');
+            try {
+                window.open('supplier-ewallet-interface.html', '_blank');
+                console.log('✅ E-Wallet interface opened in new tab');
+            } catch (error) {
+                console.error('Failed to open E-Wallet interface:', error);
+            }
+        }
+
+        function testSupplierWallet() {
+            console.log('🏭 Testing Supplier Wallet...');
+            try {
+                if (typeof getSupplierWallet === 'function') {
+                    const wallet = getSupplierWallet('Test Supplier');
+                    const walletData = wallet.getWalletData();
+                    console.log(`✅ Supplier Wallet created: ${walletData.supplierName}`);
+                    console.log(`   Balance: $${walletData.balance.current.toFixed(2)}`);
+                    console.log(`   Credit Limit: $${walletData.balance.creditLimit.toFixed(2)}`);
+                    console.log(`   Status: ${walletData.paymentStatus.status}`);
+                    console.log(`   Relationship Score: ${Math.round(walletData.metrics.relationshipScore)}%`);
+                } else {
+                    console.log('❌ Supplier Wallet function not available');
+                }
+            } catch (error) {
+                console.error('Supplier Wallet test failed:', error);
+            }
+        }
+
+        function testWalletDashboard() {
+            console.log('📊 Testing Wallet Dashboard...');
+            try {
+                if (typeof getSupplierWalletDashboard === 'function') {
+                    const dashboard = getSupplierWalletDashboard();
+                    console.log(`✅ Wallet Dashboard generated`);
+                    console.log(`   Total Suppliers: ${dashboard.totalSuppliers}`);
+                    console.log(`   Total Payables: $${dashboard.totalPayables.toFixed(2)}`);
+                    console.log(`   Overdue Suppliers: ${dashboard.overdueSuppliers}`);
+                    console.log(`   High Risk Suppliers: ${dashboard.highRiskSuppliers}`);
+                    console.log(`   Average Relationship Score: ${Math.round(dashboard.averageRelationshipScore)}%`);
+                } else {
+                    console.log('❌ Wallet Dashboard function not available');
+                }
+            } catch (error) {
+                console.error('Wallet Dashboard test failed:', error);
+            }
         }
 
         // Initialize on page load

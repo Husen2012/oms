@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💳 Supplier E-Wallet System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .summary-card .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .summary-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .summary-card .label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .wallets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .wallet-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .wallet-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .wallet-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wallet-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transform: rotate(45deg);
+        }
+
+        .wallet-header h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .wallet-balance {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .wallet-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 2;
+        }
+
+        .status-current { background: rgba(46, 204, 113, 0.2); color: #27ae60; }
+        .status-due-soon { background: rgba(241, 196, 15, 0.2); color: #f39c12; }
+        .status-overdue { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+
+        .wallet-body {
+            padding: 25px;
+        }
+
+        .wallet-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+        }
+
+        .progress-bar {
+            background: #ecf0f1;
+            border-radius: 10px;
+            height: 8px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .recent-transactions {
+            margin-top: 20px;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-description {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 3px;
+        }
+
+        .transaction-date {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .amount-positive { color: #27ae60; }
+        .amount-negative { color: #e74c3c; }
+
+        .wallet-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .risk-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .risk-low { background: #27ae60; }
+        .risk-medium { background: #f39c12; }
+        .risk-high { background: #e74c3c; }
+
+        @media (max-width: 768px) {
+            .wallets-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .wallet-metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: white;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .payment-schedule {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .schedule-item.overdue {
+            border-left-color: #e74c3c;
+            background: #fdf2f2;
+        }
+
+        .schedule-item.due-soon {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💳 Supplier E-Wallet System</h1>
+            <p>Visual supplier statement management with wallet-style interface</p>
+        </div>
+
+        <!-- Dashboard Summary -->
+        <div id="dashboardSummary" class="dashboard-summary">
+            <div class="summary-card">
+                <div class="icon">👥</div>
+                <div class="value" id="totalSuppliers">0</div>
+                <div class="label">Total Suppliers</div>
+            </div>
+            <div class="summary-card">
+                <div class="icon">💰</div>
+                <div class="value" id="totalPayables">$0</div>
+                <div class="label">Total Payables</div>
+            </div>
+            <div class="summary-card">
+                <div class="icon">⚠️</div>
+                <div class="value" id="overdueSuppliers">0</div>
+                <div class="label">Overdue Suppliers</div>
+            </div>
+            <div class="summary-card">
+                <div class="icon">📊</div>
+                <div class="value" id="avgRelationshipScore">0%</div>
+                <div class="label">Avg Relationship Score</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterWallets('all')">All Suppliers</button>
+            <button class="filter-btn" onclick="filterWallets('overdue')">Overdue</button>
+            <button class="filter-btn" onclick="filterWallets('due_soon')">Due Soon</button>
+            <button class="filter-btn" onclick="filterWallets('current')">Current</button>
+            <button class="filter-btn" onclick="filterWallets('high_risk')">High Risk</button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <div>🔄 Loading supplier wallets...</div>
+        </div>
+
+        <!-- Wallets Grid -->
+        <div id="walletsGrid" class="wallets-grid" style="display: none;">
+            <!-- Wallets will be populated here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <h3>No Supplier Wallets Found</h3>
+            <p>Create your first supplier to see their e-wallet here</p>
+        </div>
+
+        <!-- Payment Schedule -->
+        <div id="paymentSchedule" class="payment-schedule" style="display: none;">
+            <h3>📅 Upcoming Payment Schedule</h3>
+            <div id="scheduleItems">
+                <!-- Schedule items will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Dependencies -->
+    <script src="accounting-chart-of-accounts.js"></script>
+    <script src="accounting-journal-entries.js"></script>
+    <script src="accounting-general-ledger.js"></script>
+    <script src="accounting-partner-statements.js"></script>
+    <script src="supplier-ewallet-system.js"></script>
+
+    <script>
+        // Global variables
+        let currentFilter = 'all';
+        let allWallets = [];
+
+        // Initialize the interface
+        async function initializeInterface() {
+            try {
+                // Initialize the e-wallet system
+                initializeSupplierEWalletSystem();
+                
+                // Load sample data if no suppliers exist
+                await loadSampleData();
+                
+                // Load dashboard
+                loadDashboard();
+                
+                // Load wallets
+                loadWallets();
+                
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                
+            } catch (error) {
+                console.error('Error initializing interface:', error);
+                document.getElementById('loading').innerHTML = '❌ Error loading supplier wallets';
+            }
+        }
+
+        // Load sample data for demonstration
+        async function loadSampleData() {
+            // Create sample suppliers if none exist
+            if (typeof suppliers === 'undefined' || suppliers.length === 0) {
+                window.suppliers = [
+                    { id: 'SUP001', name: 'K2 Manufacturing', creditLimit: 50000, paymentTerms: 'net30', currency: 'USD' },
+                    { id: 'SUP002', name: 'Global Electronics Ltd', creditLimit: 75000, paymentTerms: 'net45', currency: 'USD' },
+                    { id: 'SUP003', name: 'Asia Components Co', creditLimit: 30000, paymentTerms: 'net15', currency: 'USD' },
+                    { id: 'SUP004', name: 'Tech Solutions Inc', creditLimit: 100000, paymentTerms: 'net30', currency: 'USD' }
+                ];
+            }
+
+            // Create sample supplier invoices if none exist
+            if (typeof supplierInvoices === 'undefined' || supplierInvoices.length === 0) {
+                window.supplierInvoices = [
+                    { id: 'PO001', supplier: 'SUP001', date: '2024-06-01', amount: 15000, status: 'Pending', dueDate: '2024-07-01' },
+                    { id: 'PO002', supplier: 'SUP002', date: '2024-06-05', amount: 25000, status: 'Paid', dueDate: '2024-07-20' },
+                    { id: 'PO003', supplier: 'SUP003', date: '2024-06-10', amount: 8000, status: 'Overdue', dueDate: '2024-06-25' },
+                    { id: 'PO004', supplier: 'SUP004', date: '2024-06-15', amount: 45000, status: 'Pending', dueDate: '2024-07-15' }
+                ];
+            }
+        }
+
+        // Load dashboard summary
+        function loadDashboard() {
+            const dashboard = getSupplierWalletDashboard();
+            
+            document.getElementById('totalSuppliers').textContent = dashboard.totalSuppliers;
+            document.getElementById('totalPayables').textContent = `$${dashboard.totalPayables.toLocaleString()}`;
+            document.getElementById('overdueSuppliers').textContent = dashboard.overdueSuppliers;
+            document.getElementById('avgRelationshipScore').textContent = `${Math.round(dashboard.averageRelationshipScore)}%`;
+        }
+
+        // Load wallets
+        function loadWallets() {
+            allWallets = getAllSupplierWallets();
+            displayWallets(allWallets);
+            
+            if (allWallets.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('walletsGrid').style.display = 'none';
+            } else {
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('walletsGrid').style.display = 'grid';
+            }
+        }
+
+        // Display wallets
+        function displayWallets(wallets) {
+            const grid = document.getElementById('walletsGrid');
+            grid.innerHTML = '';
+
+            wallets.forEach(wallet => {
+                const walletCard = createWalletCard(wallet);
+                grid.appendChild(walletCard);
+            });
+        }
+
+        // Create wallet card
+        function createWalletCard(walletSummary) {
+            const card = document.createElement('div');
+            card.className = 'wallet-card';
+            
+            const statusClass = `status-${walletSummary.paymentStatus.replace('_', '-')}`;
+            const riskClass = `risk-${walletSummary.riskLevel}`;
+            
+            card.innerHTML = `
+                <div class="risk-indicator ${riskClass}"></div>
+                <div class="wallet-header">
+                    <h3>${walletSummary.supplierName}</h3>
+                    <div class="wallet-balance">$${walletSummary.currentBalance.toLocaleString()}</div>
+                    <span class="wallet-status ${statusClass}">${walletSummary.paymentStatus.replace('_', ' ')}</span>
+                </div>
+                <div class="wallet-body">
+                    <div class="wallet-metrics">
+                        <div class="metric">
+                            <div class="metric-value">${Math.round(walletSummary.relationshipScore)}</div>
+                            <div class="metric-label">Relationship Score</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">$${walletSummary.availableCredit.toLocaleString()}</div>
+                            <div class="metric-label">Available Credit</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${(walletSummary.currentBalance / walletSummary.creditLimit) * 100}%"></div>
+                    </div>
+                    
+                    ${walletSummary.nextPaymentDue ? `
+                        <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                            <strong>Next Payment:</strong> $${walletSummary.nextPaymentAmount.toLocaleString()}<br>
+                            <small>Due: ${walletSummary.nextPaymentDue}</small>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="wallet-actions">
+                        <button class="btn btn-primary" onclick="viewWalletDetails('${walletSummary.supplierId}')">
+                            View Details
+                        </button>
+                        <button class="btn btn-secondary" onclick="makePayment('${walletSummary.supplierId}')">
+                            Make Payment
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Filter wallets
+        function filterWallets(filter) {
+            currentFilter = filter;
+            
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            let filteredWallets = allWallets;
+            
+            switch(filter) {
+                case 'overdue':
+                    filteredWallets = allWallets.filter(w => w.paymentStatus === 'overdue');
+                    break;
+                case 'due_soon':
+                    filteredWallets = allWallets.filter(w => w.paymentStatus === 'due_soon');
+                    break;
+                case 'current':
+                    filteredWallets = allWallets.filter(w => w.paymentStatus === 'current');
+                    break;
+                case 'high_risk':
+                    filteredWallets = allWallets.filter(w => w.riskLevel === 'high');
+                    break;
+                default:
+                    filteredWallets = allWallets;
+            }
+            
+            displayWallets(filteredWallets);
+        }
+
+        // View wallet details
+        function viewWalletDetails(supplierId) {
+            const wallet = getSupplierWallet(supplierId);
+            const walletData = wallet.getWalletData();
+            
+            alert(`Detailed view for ${walletData.supplierName}\n\nBalance: $${walletData.balance.current.toLocaleString()}\nCredit Limit: $${walletData.balance.creditLimit.toLocaleString()}\nRelationship Score: ${Math.round(walletData.metrics.relationshipScore)}\n\nRecent Transactions: ${walletData.recentTransactions.length}`);
+        }
+
+        // Make payment
+        function makePayment(supplierId) {
+            const amount = prompt('Enter payment amount:');
+            if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+                const wallet = getSupplierWallet(supplierId);
+                const payment = wallet.makePayment(parseFloat(amount));
+                
+                alert(`Payment of $${parseFloat(amount).toLocaleString()} made successfully!\n\nPayment ID: ${payment.id}\nNew Balance: $${wallet.getWalletData().balance.current.toLocaleString()}`);
+                
+                // Refresh display
+                loadDashboard();
+                loadWallets();
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', initializeInterface);
+    </script>
+</body>
+</html>
