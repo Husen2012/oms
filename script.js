@@ -1,5 +1,66 @@
 
 
+// ✅ NAVIGATION FUNCTIONS
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('open');
+    }
+}
+
+function toggleMobileNav() {
+    const navLinks = document.querySelector('.nav-links');
+    const mobileToggle = document.querySelector('.mobile-nav-toggle');
+
+    if (navLinks && mobileToggle) {
+        navLinks.classList.toggle('mobile-hidden');
+        navLinks.classList.toggle('mobile-menu');
+
+        // Update toggle icon
+        mobileToggle.innerHTML = navLinks.classList.contains('mobile-menu') ? '✕' : '☰';
+    }
+}
+
+// Initialize navigation on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Add mobile navigation toggle if needed
+    const navbar = document.querySelector('.navbar');
+    const navContainer = document.querySelector('.nav-container');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (navbar && navContainer && navLinks && window.innerWidth <= 768) {
+        // Check if mobile toggle doesn't exist
+        if (!navContainer.querySelector('.mobile-nav-toggle')) {
+            const mobileToggle = document.createElement('button');
+            mobileToggle.className = 'mobile-nav-toggle';
+            mobileToggle.innerHTML = '☰';
+            mobileToggle.onclick = toggleMobileNav;
+            mobileToggle.style.display = 'none'; // Hidden by default, shown in CSS media query
+
+            navContainer.appendChild(mobileToggle);
+            navLinks.classList.add('mobile-hidden');
+        }
+    }
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        const navLinks = document.querySelector('.nav-links');
+        const mobileToggle = document.querySelector('.mobile-nav-toggle');
+
+        if (window.innerWidth > 768) {
+            if (navLinks) {
+                navLinks.classList.remove('mobile-hidden', 'mobile-menu');
+            }
+            if (mobileToggle) {
+                mobileToggle.innerHTML = '☰';
+            }
+        } else {
+            if (navLinks && !navLinks.classList.contains('mobile-menu')) {
+                navLinks.classList.add('mobile-hidden');
+            }
+        }
+    });
+});
 
 // ✅ COMPREHENSIVE TEST DATA INITIALIZATION
 function initializeTestData() {
