@@ -14,12 +14,19 @@
     <script src="https://cdn.jsdelivr.net/npm/bidi-js@1.0.3/lib/bidi.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <nav class="sidebar">
+    <!-- Mobile sidebar toggle -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()" style="display: none;">☰</button>
+
+    <div class="container sidebar-layout">
+        <nav class="sidebar" id="sidebar">
             <div class="nav-links">
                 <a href="index.html" class="nav-link">
                     <span class="nav-icon">📋</span>
                     Master Order
+                </a>
+                <a href="inventory.html" class="nav-link">
+                    <span class="nav-icon">📦</span>
+                    Inventory
                 </a>
                 <a href="shipments.html" class="nav-link active">
                     <span class="nav-icon">🚚</span>
