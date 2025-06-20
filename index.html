@@ -15,12 +15,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <h2>Sourcing Agent</h2>
-            </div>
+    <!-- Left Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-brand">
+                <span class="sidebar-brand-icon">🏢</span>
+                Sourcing Agent
+            </h1>
+        </div>
+        <div class="sidebar-nav">
             <div class="nav-links">
                 <a href="index.html" class="nav-link active">
                     <span class="nav-icon">📋</span>
@@ -34,14 +37,16 @@
                     <span class="nav-icon">🚚</span>
                     Shipments
                 </a>
-                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
-                    <span class="theme-icon">🌙</span>
-                </button>
             </div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+                <span class="theme-icon">🌙</span>
+            </button>
         </div>
     </nav>
 
-    <div class="container">
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div class="container">
         <header class="header">
             <h1>Master Order</h1>
             <p>Create and manage customer sales orders</p>
@@ -1351,6 +1356,9 @@
             </div>
         </div>
     </div>
+
+        </div>
+    </main>
 
     <script src="script.js"></script>
 </body>

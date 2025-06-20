@@ -8,26 +8,42 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <h1>📦 Inventory Management</h1>
-            </div>
+    <!-- Left Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-brand">
+                <span class="sidebar-brand-icon">🏢</span>
+                Sourcing Agent
+            </h1>
+        </div>
+        <div class="sidebar-nav">
             <div class="nav-links">
-                <a href="index.html" class="nav-link">🏠 Master Order Page</a>
-                <a href="purchase-orders.html" class="nav-link">🛒 Purchase Orders</a>
-                <a href="customer-invoices.html" class="nav-link">📋 Customer Sales Orders</a>
-                <a href="shipments.html" class="nav-link">🚚 Shipments</a>
-                <a href="inventory.html" class="nav-link active">📦 Inventory</a>
-                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
-                    <span class="theme-icon">🌙</span>
-                </button>
+                <a href="index.html" class="nav-link">
+                    <span class="nav-icon">📋</span>
+                    Master Order
+                </a>
+                <a href="inventory.html" class="nav-link active">
+                    <span class="nav-icon">📦</span>
+                    Inventory
+                </a>
+                <a href="shipments.html" class="nav-link">
+                    <span class="nav-icon">🚚</span>
+                    Shipments
+                </a>
             </div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+                <span class="theme-icon">🌙</span>
+            </button>
         </div>
     </nav>
 
-    <div class="container">
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div class="container">
+            <header class="header">
+                <h1>📦 Inventory Management</h1>
+                <p>Track and manage product inventory levels</p>
+            </header>
         <!-- Inventory Overview Dashboard -->
         <section class="section">
             <div class="section-header">
@@ -171,7 +187,8 @@
                 </table>
             </div>
         </section>
-    </div>
+        </div>
+    </main>
 
     <!-- Receive Goods Modal -->
     <div id="receiveGoodsModal" class="modal">

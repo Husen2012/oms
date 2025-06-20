@@ -14,24 +14,38 @@
     <script src="https://cdn.jsdelivr.net/npm/bidi-js@1.0.3/lib/bidi.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <nav class="sidebar">
+    <!-- Left Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-brand">
+                <span class="sidebar-brand-icon">🏢</span>
+                Sourcing Agent
+            </h1>
+        </div>
+        <div class="sidebar-nav">
             <div class="nav-links">
                 <a href="index.html" class="nav-link">
                     <span class="nav-icon">📋</span>
                     Master Order
                 </a>
+                <a href="inventory.html" class="nav-link">
+                    <span class="nav-icon">📦</span>
+                    Inventory
+                </a>
                 <a href="shipments.html" class="nav-link active">
                     <span class="nav-icon">🚚</span>
                     Shipments
                 </a>
-                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
-                    <span class="theme-icon">🌙</span>
-                </button>
             </div>
-        </nav>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </nav>
 
-        <main class="main-content">
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div class="container">
             <header class="header">
                 <h1>🚚 Shipments</h1>
                 <p>Track and manage customer order shipments</p>
@@ -249,8 +263,8 @@
                     </div>
                 </div>
             </section>
-        </main>
-    </div>
+        </div>
+    </main>
 
     <!-- ✅ STANDALONE SHIPMENT CREATION MODAL -->
     <div id="standaloneShipmentModal" class="modal">
